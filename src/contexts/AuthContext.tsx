@@ -5,13 +5,24 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { UserProfile } from "@/lib/matching-engine";
 
+export interface AuthUser {
+  uid: string;
+  email?: string | null;
+  displayName?: string | null;
+  phoneNumber?: string | null;
+  photoURL?: string | null;
+  isOtpUser?: boolean;
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: User | AuthUser | null;
   userProfile: Partial<UserProfile> | null;
   loading: boolean;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  loginWithOtpSession: (data: { name: string; phone: string; email?: string }) => void;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   language: "en" | "hi" | "or";
@@ -21,15 +32,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | AuthUser | null>(null);
   const [userProfile, setUserProfile] = useState<Partial<UserProfile> | null>(null);
   const [loading, setLoading] = useState(true);
   const [language, setLanguageState] = useState<"en" | "hi" | "or">("en");
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
-      setUser(u);
       if (u) {
+        setUser(u);
         try {
           const snap = await getDoc(doc(db, "users", u.uid));
           if (snap.exists()) {
@@ -50,6 +61,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } else {
+        // If not logged in via Firebase, check for active verified session
+        try {
+          const stored = typeof window !== "undefined"
+            ? (localStorage.getItem("sahayak_otp_session") || sessionStorage.getItem("sahayak_otp_session") || sessionStorage.getItem("sahayak_profile"))
+            : null;
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && (parsed.phone || parsed.verified)) {
+              const otpUser: AuthUser = {
+                uid: `otp-${(parsed.phone || "user").replace(/\D/g, "")}`,
+                displayName: parsed.name || "Beneficiary",
+                phoneNumber: parsed.phone,
+                email: parsed.email || null,
+                isOtpUser: true,
+              };
+              setUser(otpUser);
+              setUserProfile({
+                name: parsed.name || "Beneficiary",
+                phone: parsed.phone,
+                languagePreference: "en",
+                verified: true,
+              });
+              setLoading(false);
+              return;
+            }
+          }
+        } catch {}
+        setUser(null);
         setUserProfile(null);
       }
       setLoading(false);
@@ -93,8 +132,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithOtpSession = (data: { name: string; phone: string; email?: string }) => {
+    const cleanPhone = (data.phone || "").replace(/\D/g, "");
+    const otpUser: AuthUser = {
+      uid: `otp-${cleanPhone || "user"}`,
+      displayName: data.name || "Beneficiary",
+      phoneNumber: data.phone,
+      email: data.email || null,
+      isOtpUser: true,
+    };
+    setUser(otpUser);
+    const profile = {
+      name: data.name || "Beneficiary",
+      phone: data.phone,
+      languagePreference: "en" as const,
+      verified: true,
+    };
+    setUserProfile(profile);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("sahayak_otp_session", JSON.stringify(data));
+      sessionStorage.setItem("sahayak_otp_session", JSON.stringify(data));
+      sessionStorage.setItem("sahayak_profile", JSON.stringify(profile));
+    }
+  };
+
   const logout = async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch {}
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("sahayak_otp_session");
+      sessionStorage.removeItem("sahayak_otp_session");
+      sessionStorage.removeItem("sahayak_profile");
+    }
+    setUser(null);
     setUserProfile(null);
   };
 
@@ -115,7 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, login, register, loginWithGoogle, logout, updateProfile, language, setLanguage }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, isAuthenticated: !!user, login, register, loginWithGoogle, loginWithOtpSession, logout, updateProfile, language, setLanguage }}>
       {children}
     </AuthContext.Provider>
   );

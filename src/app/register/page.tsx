@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -17,8 +17,18 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <RegisterContent />
+    </Suspense>
+  );
+}
+
+function RegisterContent() {
+  const { register, loginWithOtpSession } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/questionnaire";
 
   const [authMode, setAuthMode] = useState<"otp" | "password">("otp");
   const [phone, setPhone] = useState("");
@@ -104,17 +114,13 @@ export default function RegisterPage() {
         throw new Error(data.error || "Incorrect OTP code. Please check your SMS.");
       }
 
-      // Store authenticated session profile
-      sessionStorage.setItem(
-        "sahayak_profile",
-        JSON.stringify({
-          name: name.trim() || "Beneficiary",
-          phone: phone.trim(),
-          verified: true,
-        })
-      );
+      // Store authenticated session profile in AuthContext
+      loginWithOtpSession({
+        name: name.trim() || "Beneficiary",
+        phone: phone.trim(),
+      });
 
-      router.push("/questionnaire");
+      router.push(redirectUrl);
     } catch (err: any) {
       console.error("2Factor verify OTP error:", err);
       setError(err.message || "Failed to verify OTP code.");
@@ -133,7 +139,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register(email, password, name);
-      router.push("/questionnaire");
+      router.push(redirectUrl);
     } catch (err: any) {
       setError(err.message?.replace("Firebase: ", "") || "Registration failed.");
     }
@@ -377,7 +383,10 @@ export default function RegisterPage() {
 
           <p className="text-center text-xs text-slate-500 mt-6 pt-4 border-t border-slate-100">
             Already have an account?{" "}
-            <Link href="/login" className="text-indigo-600 font-bold hover:underline">
+            <Link
+              href={`/login${redirectUrl !== "/questionnaire" ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}
+              className="text-indigo-600 font-bold hover:underline"
+            >
               Sign In
             </Link>
           </p>

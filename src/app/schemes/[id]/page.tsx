@@ -1,6 +1,6 @@
 'use client';
-import { use, useState } from "react";
-import { notFound } from "next/navigation";
+import { use, useState, useEffect, Suspense } from "react";
+import { notFound, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -37,10 +37,25 @@ const APPLICATION_STEPS = [
 
 export default function SchemeDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <SchemeDetailsContent id={id} />
+    </Suspense>
+  );
+}
+
+function SchemeDetailsContent({ id }: { id: string }) {
   const scheme = getSchemeById(id);
   if (!scheme) notFound();
 
+  const searchParams = useSearchParams();
   const [applyModalOpen, setApplyModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("apply")) {
+      setApplyModalOpen(true);
+    }
+  }, [searchParams]);
 
   const handlePrint = () => {
     window.print();

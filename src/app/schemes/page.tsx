@@ -1,19 +1,39 @@
 'use client';
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Search, ArrowRight, Calculator, MapPin, Filter, Send } from "lucide-react";
-import { SCHEMES, Scheme } from "@/lib/schemes-data";
+import { SCHEMES, Scheme, getSchemeById } from "@/lib/schemes-data";
 import ApplySchemeModal from "@/components/ApplySchemeModal";
 
 const PURPOSES = ["All", "Business Start", "Business Expansion", "Machinery", "Working Capital", "Agriculture"];
 const CATEGORIES = ["All", "Micro", "Small", "Medium", "Agriculture"];
 
 export default function SchemesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <SchemesContent />
+    </Suspense>
+  );
+}
+
+function SchemesContent() {
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [purpose, setPurpose] = useState("All");
   const [category, setCategory] = useState("All");
   const [selectedSchemeForApply, setSelectedSchemeForApply] = useState<Scheme | null>(null);
+
+  useEffect(() => {
+    const applyParam = searchParams.get("apply");
+    if (applyParam) {
+      const found = getSchemeById(applyParam);
+      if (found) {
+        setSelectedSchemeForApply(found);
+      }
+    }
+  }, [searchParams]);
 
   const filtered = SCHEMES.filter((s) => {
     if (s.status === "discontinued") return false;

@@ -35,6 +35,12 @@ function EligibilityCheckContent() {
   const [state, setState] = useState<string>(userProfile?.state || "Odisha");
   const [applyModalOpen, setApplyModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (searchParams.get("apply")) {
+      setApplyModalOpen(true);
+    }
+  }, [searchParams]);
+
   const activeSchemes = SCHEMES.filter((s) => s.status === "active");
   const currentScheme = getSchemeById(selectedSchemeId) || activeSchemes[0];
 

@@ -22,6 +22,7 @@ export interface UserProfile {
   aadhaarMasked?: string;
   panMasked?: string;
   phone?: string;
+  verified?: boolean;
 }
 
 export interface EligibilityCriterion {

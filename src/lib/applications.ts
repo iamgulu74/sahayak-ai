@@ -1,5 +1,7 @@
 export interface SubmittedApplication {
   applicationId: string;
+  userId?: string;
+  applicantEmail?: string;
   schemeId: string;
   schemeName: string;
   schemeShortName: string;
