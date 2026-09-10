@@ -1,0 +1,2247 @@
+[
+  {
+    "id": "nsfdc-hq",
+    "partner_id": "nsfdc-hq",
+    "name": "National Scheduled Castes Finance and Development Corporation (NSFDC) — Head Office",
+    "type": "Apex Corporation (not a routing partner — reference only)",
+    "address": "14th Floor, SCOPE Minar, Core 1 & 2, North Tower, Laxmi Nagar District Centre, Laxmi Nagar, Delhi – 110092",
+    "state": "Delhi",
+    "district": "Delhi",
+    "pincode": "110092",
+    "lat": 28.6328,
+    "lng": 77.2798,
+    "phone": "011-22054392 / 22054394 / 22054396",
+    "email": "support-nsfdc@nic.in",
+    "supportedSchemes": [],
+    "supported_schemes": [],
+    "supportedCategories": [
+      "SC"
+    ],
+    "routingStatus": "restricted",
+    "routing_status": "demo_data",
+    "fundAvailability": "restricted",
+    "currentLoad": "Apex HQ (Central Oversight)",
+    "avgProcessingDays": 0,
+    "performanceScore": 98,
+    "lastStatusUpdate": "2026-09-08",
+    "last_verified": "2026-09-08",
+    "isReferenceOnly": true,
+    "liaisonCenters": [
+      "Mumbai",
+      "Kolkata",
+      "Lucknow",
+      "Bengaluru"
+    ],
+    "liaison_centers": [
+      "Mumbai",
+      "Kolkata",
+      "Lucknow",
+      "Bengaluru"
+    ],
+    "note": "Applicants cannot apply directly to NSFDC — must route through an SCA/CA. Included for reference/contact only.",
+    "notes": "Applicants cannot apply directly to NSFDC — must route through an SCA/CA. Included for reference/contact only.",
+    "sourceUrl": "https://myscheme.gov.in/schemes/mcfnsfdc",
+    "source_url": "https://myscheme.gov.in/schemes/mcfnsfdc"
+  },
+  {
+    "id": "sca-odisha-osfdc",
+    "partner_id": "sca-odisha-osfdc",
+    "name": "Odisha Scheduled Caste and Scheduled Tribe Development Finance Co-operative Corporation Ltd. (OSFDC)",
+    "type": "SCA",
+    "address": "Bhubaneswar, Odisha",
+    "state": "Odisha",
+    "district": "Khordha (HQ: Bhubaneswar)",
+    "pincode": "751001",
+    "lat": 20.2961,
+    "lng": 85.8189,
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad"
+    ],
+    "supported_schemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST"
+    ],
+    "routingStatus": "available",
+    "routing_status": "demo_data",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (28 active cases)",
+    "avgProcessingDays": 14,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "last_verified": "2026-09-08",
+    "operatingArea": [
+      "Khordha",
+      "Sundargarh",
+      "Cuttack",
+      "Sambalpur",
+      "Puri",
+      "Ganjam",
+      "Mayurbhanj",
+      "Balasore"
+    ],
+    "branchCode": "OSFDC-BBN-HQ",
+    "source": "Odisha ST & SC Development Department / RTI Odisha organisational manual",
+    "sourceUrl": "https://rtiodisha.gov.in/Pages/printAllManual/office_id:148/lang:",
+    "source_url": "https://rtiodisha.gov.in/Pages/printAllManual/office_id:148/lang:",
+    "note": "State Channelising Agency (SCA) for Odisha. Routes NSFDC micro-credit, Suvidha, and Utkarsh loans across all 30 districts.",
+    "notes": "Address is HQ-level (Bhubaneswar) from public records; exact street address/lat-long and district branch network were not found in a structured public source and would need direct verification with OSFDC or the Odisha ST & SC Development Department before production use."
+  },
+  {
+    "id": "sbi-bbsr-01",
+    "name": "State Bank of India — Bhubaneswar Main Branch",
+    "type": "PSB",
+    "address": "Raj Bhavan Road, Unit-1, Bhubaneswar, Odisha – 751001",
+    "state": "Odisha",
+    "district": "Khordha",
+    "pincode": "751001",
+    "lat": 20.2725,
+    "lng": 85.8388,
+    "phone": "0674-2391234",
+    "email": "sbi.00691@sbi.co.in",
+    "supportedSchemes": [
+      "mudra-shishu",
+      "mudra-kishore",
+      "stand-up-india",
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "pm-svanidhi"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (19 active cases)",
+    "avgProcessingDays": 14,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Khordha",
+      "Puri",
+      "Cuttack"
+    ],
+    "branchCode": "SBI-BBN-691"
+  },
+  {
+    "id": "odisha-gb-sundargarh",
+    "name": "Odisha Gramya Bank — Sundargarh Branch",
+    "type": "RRB",
+    "address": "Main Road, Near Collectorate, Sundargarh, Odisha – 770001",
+    "state": "Odisha",
+    "district": "Sundargarh",
+    "pincode": "770001",
+    "lat": 22.1215,
+    "lng": 84.0373,
+    "phone": "06622-272345",
+    "email": "ogb.sundargarh@odishagramya.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu",
+      "mudra-kishore",
+      "pm-svanidhi"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (7 active cases)",
+    "avgProcessingDays": 10,
+    "performanceScore": 96,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Sundargarh",
+      "Rourkela",
+      "Jharsuguda"
+    ],
+    "branchCode": "OGB-SDG-001",
+    "note": "Serving grassroots entrepreneurs and artisans in Sundargarh and Rourkela."
+  },
+  {
+    "id": "pnb-rourkela-sdg",
+    "name": "Punjab National Bank — Rourkela Main, Sundargarh",
+    "type": "PSB",
+    "address": "Bisra Road, Uditnagar, Rourkela, Sundargarh, Odisha – 769012",
+    "state": "Odisha",
+    "district": "Sundargarh",
+    "pincode": "769012",
+    "lat": 22.227,
+    "lng": 84.8647,
+    "phone": "0661-2501234",
+    "email": "bo4125@pnb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "mudra-kishore",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "limited",
+    "fundAvailability": "limited",
+    "currentLoad": "High Application Queue (42 cases)",
+    "avgProcessingDays": 24,
+    "performanceScore": 84,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Sundargarh",
+      "Rourkela",
+      "Panposh"
+    ],
+    "branchCode": "PNB-ROU-4125",
+    "note": "Currently flagged with limited quota for machinery term loans — alternative recommended."
+  },
+  {
+    "id": "annapurna-mfi-bbsr",
+    "name": "Annapurna Finance Pvt Ltd — Microfinance Partner",
+    "type": "NBFC-MFI",
+    "address": "Khandagiri, Bhubaneswar, Odisha – 751030",
+    "state": "Odisha",
+    "district": "Khordha",
+    "pincode": "751030",
+    "lat": 20.258,
+    "lng": 85.7872,
+    "phone": "0674-2384900",
+    "email": "microfinance@annapurnafinance.in",
+    "supportedSchemes": [
+      "nsfdc-amy",
+      "nsfdc-msy",
+      "pm-svanidhi",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Fast-Track (Doorstep processing)",
+    "avgProcessingDays": 7,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Khordha",
+      "Cuttack",
+      "Puri",
+      "Dhenkanal"
+    ],
+    "branchCode": "ANN-MFI-01"
+  },
+  {
+    "id": "uco-cuttack-choudhury",
+    "name": "UCO Bank — Choudhury Bazar Branch, Cuttack",
+    "type": "PSB",
+    "address": "Choudhury Bazar, Cuttack, Odisha – 753001",
+    "state": "Odisha",
+    "district": "Cuttack",
+    "pincode": "753001",
+    "lat": 20.463,
+    "lng": 85.8793,
+    "phone": "0671-2412890",
+    "email": "cuttack@ucobank.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (12 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "UCO-CTC-01"
+  },
+  {
+    "id": "sca-assam-asfdc",
+    "partner_id": "sca-assam-asfdc",
+    "name": "Assam State Development Corporation for Scheduled Castes Ltd (ASDSC)",
+    "type": "SCA",
+    "address": "Bishnu Rabha Ali, Mandir Path, Gopinath Nagar, Guwahati, Assam – 781016",
+    "state": "Assam",
+    "district": "Kamrup Metropolitan",
+    "pincode": "781016",
+    "lat": 26.1584,
+    "lng": 91.7588,
+    "phone": "0361-2470123 / 2470456",
+    "email": "asfdc-assam@gov.in",
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad"
+    ],
+    "supported_schemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad"
+    ],
+    "supportedCategories": [
+      "SC"
+    ],
+    "routingStatus": "available",
+    "routing_status": "official_sca",
+    "fundAvailability": "available",
+    "currentLoad": "Active (21 applications in review)",
+    "avgProcessingDays": 14,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Kamrup Metropolitan",
+      "Kamrup",
+      "Nagaon",
+      "Barpeta",
+      "Darrang",
+      "Cachar",
+      "Dibrugarh"
+    ],
+    "branchCode": "ASDSC-GHY-HQ",
+    "source": "Welfare of Plain Tribes & Backward Classes Department, Govt of Assam",
+    "note": "Designated State Channelising Agency for Assam. Facilitates NSFDC concessional micro-credit and Suvidha loans across all districts."
+  },
+  {
+    "id": "agvb-guwahati-panbazar",
+    "name": "Assam Gramin Vikash Bank (AGVB) — Head Office & Panbazar Main",
+    "type": "RRB",
+    "address": "Mahapurush Srimanta Sankardev Road, Panbazar, Guwahati, Assam – 781001",
+    "state": "Assam",
+    "district": "Kamrup Metropolitan",
+    "pincode": "781001",
+    "lat": 26.1868,
+    "lng": 91.7483,
+    "phone": "0361-2510849 / 2510850",
+    "email": "agvb.panbazar@agvbank.co.in",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "nsfdc-suvidha",
+      "mudra-shishu",
+      "mudra-kishore",
+      "pm-svanidhi"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "High Capacity (14 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Kamrup",
+      "Goalpara",
+      "Dhubri",
+      "Morigaon",
+      "Sonitpur"
+    ],
+    "branchCode": "AGVB-GHY-001",
+    "note": "Premier Regional Rural Bank in Assam offering priority queue for rural artisan and tailoring micro-credit."
+  },
+  {
+    "id": "sbi-guwahati-panbazar",
+    "name": "State Bank of India — Guwahati Main Branch",
+    "type": "PSB",
+    "address": "Opposite High Court, MG Road, Panbazar, Guwahati, Assam – 781001",
+    "state": "Assam",
+    "district": "Kamrup Metropolitan",
+    "pincode": "781001",
+    "lat": 26.1902,
+    "lng": 91.751,
+    "phone": "0361-2540021 / 2540022",
+    "email": "sbi.00078@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india",
+      "mudra-kishore",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (24 active cases)",
+    "avgProcessingDays": 15,
+    "performanceScore": 91,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Kamrup Metropolitan",
+      "Kamrup Rural",
+      "Darrang"
+    ],
+    "branchCode": "SBI-GHY-078"
+  },
+  {
+    "id": "pnb-dispur-capital",
+    "name": "Punjab National Bank — Dispur Capital Complex Branch",
+    "type": "PSB",
+    "address": "GS Road, Dispur, Guwahati, Assam – 781005",
+    "state": "Assam",
+    "district": "Kamrup Metropolitan",
+    "pincode": "781005",
+    "lat": 26.1432,
+    "lng": 91.7898,
+    "phone": "0361-2260114",
+    "email": "bo0312@pnb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "mudra-kishore"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "limited",
+    "fundAvailability": "limited",
+    "currentLoad": "Elevated Processing Queue (38 cases)",
+    "avgProcessingDays": 22,
+    "performanceScore": 84,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Dispur",
+      "Khanapara",
+      "Beltola",
+      "Sonapur"
+    ],
+    "branchCode": "PNB-DSP-312",
+    "note": "Currently experiencing heavy queue for machinery loans; auto-routing to ASDSC or AGVB is recommended."
+  },
+  {
+    "id": "uco-guwahati-fancy",
+    "name": "UCO Bank — Fancy Bazar Commercial Branch",
+    "type": "PSB",
+    "address": "Hem Baruah Road, Fancy Bazar, Guwahati, Assam – 781001",
+    "state": "Assam",
+    "district": "Kamrup Metropolitan",
+    "pincode": "781001",
+    "lat": 26.1842,
+    "lng": 91.741,
+    "phone": "0361-2544219",
+    "email": "fancybazar@ucobank.co.in",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "nsfdc-suvidha",
+      "pm-svanidhi"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (10 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Fancy Bazar",
+      "Machkhowa",
+      "Bharalumukh"
+    ],
+    "branchCode": "UCO-FNC-01"
+  },
+  {
+    "id": "nesfb-silchar-cachar",
+    "name": "North East Small Finance Bank / Microfinance Branch — Silchar",
+    "type": "NBFC-MFI",
+    "address": "Nazirpatty, Silchar, Cachar, Assam – 788001",
+    "state": "Assam",
+    "district": "Cachar",
+    "pincode": "788001",
+    "lat": 24.8333,
+    "lng": 92.7789,
+    "phone": "03842-230910",
+    "email": "silchar@nesfb.com",
+    "supportedSchemes": [
+      "nsfdc-amy",
+      "nsfdc-msy",
+      "pm-svanidhi",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Fast-Track (Doorstep delivery)",
+    "avgProcessingDays": 8,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Cachar",
+      "Karimganj",
+      "Hailakandi"
+    ],
+    "branchCode": "NESFB-SLC-01"
+  },
+  {
+    "id": "sca-bihar-bsccdc",
+    "partner_id": "sca-bihar-bsccdc",
+    "name": "Bihar State Scheduled Castes Co-operative Development Corporation Ltd (BSCCDC)",
+    "type": "SCA",
+    "address": "Malya Nilay, Budh Marg, Near Patna Junction, Patna, Bihar – 800001",
+    "state": "Bihar",
+    "district": "Patna",
+    "pincode": "800001",
+    "lat": 25.6067,
+    "lng": 85.1325,
+    "phone": "0612-2223451 / 2226789",
+    "email": "md_bsccdc@bihar.gov.in",
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad"
+    ],
+    "supported_schemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad"
+    ],
+    "supportedCategories": [
+      "SC"
+    ],
+    "routingStatus": "available",
+    "routing_status": "official_sca",
+    "fundAvailability": "available",
+    "currentLoad": "High Availability (32 active allocations)",
+    "avgProcessingDays": 15,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Patna",
+      "Gaya",
+      "Muzaffarpur",
+      "Bhagalpur",
+      "Darbhanga",
+      "Purnia",
+      "Rohtas"
+    ],
+    "branchCode": "BSCCDC-PAT-HQ",
+    "source": "Scheduled Caste & Scheduled Tribe Welfare Department, Government of Bihar",
+    "note": "Designated State Channelising Agency (SCA) for Bihar. Direct channel for NSFDC concessional finance."
+  },
+  {
+    "id": "ubgb-muzaffarpur-ho",
+    "name": "Uttar Bihar Gramin Bank (UBGB) — Head Office & Regional Hub",
+    "type": "RRB",
+    "address": "Kalambagh Chowk, Sharma Complex, Muzaffarpur, Bihar – 842001",
+    "state": "Bihar",
+    "district": "Muzaffarpur",
+    "pincode": "842001",
+    "lat": 26.1209,
+    "lng": 85.3647,
+    "phone": "0621-2248141 / 2248142",
+    "email": "cm.credit@ubgb.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu",
+      "mudra-kishore"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Fast Processing (18 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Muzaffarpur",
+      "Vaishali",
+      "Saran",
+      "Darbhanga",
+      "Madhubani",
+      "Samastipur"
+    ],
+    "branchCode": "UBGB-MZP-001",
+    "note": "Serving 18 districts of North Bihar with specialized credit desk for SC/ST self-help groups."
+  },
+  {
+    "id": "dbgb-patna-ho",
+    "name": "Dakshin Bihar Gramin Bank (DBGB) — Head Office & Patna Branch",
+    "type": "RRB",
+    "address": "Shri Vishnu Commercial Complex, NH-30, Ashiana-Digha Road, Patna, Bihar – 800025",
+    "state": "Bihar",
+    "district": "Patna",
+    "pincode": "800025",
+    "lat": 25.62,
+    "lng": 85.085,
+    "phone": "0612-2560120 / 2560121",
+    "email": "dbgb.credit@dbgb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "pm-svanidhi",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (15 active cases)",
+    "avgProcessingDays": 13,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Patna",
+      "Gaya",
+      "Nalanda",
+      "Bhojpur",
+      "Buxar",
+      "Rohtas",
+      "Aurangabad"
+    ],
+    "branchCode": "DBGB-PAT-001"
+  },
+  {
+    "id": "sbi-patna-gandhimaidan",
+    "name": "State Bank of India — Patna Main Branch",
+    "type": "PSB",
+    "address": "West Gandhi Maidan, Near Collectorate, Patna, Bihar – 800001",
+    "state": "Bihar",
+    "district": "Patna",
+    "pincode": "800001",
+    "lat": 25.6154,
+    "lng": 85.1432,
+    "phone": "0612-2222144 / 2222145",
+    "email": "sbi.00152@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india",
+      "mudra-kishore"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (26 active cases)",
+    "avgProcessingDays": 16,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Patna",
+      "Danapur",
+      "Phulwari Sharif"
+    ],
+    "branchCode": "SBI-PAT-152"
+  },
+  {
+    "id": "pnb-patna-boring",
+    "name": "Punjab National Bank — Boring Road Large Branch",
+    "type": "PSB",
+    "address": "Alankar Jewellers Building, Boring Road, Patna, Bihar – 800001",
+    "state": "Bihar",
+    "district": "Patna",
+    "pincode": "800001",
+    "lat": 25.6198,
+    "lng": 85.1189,
+    "phone": "0612-2540110",
+    "email": "bo2104@pnb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "limited",
+    "fundAvailability": "limited",
+    "currentLoad": "Backlogged Queue (46 pending files)",
+    "avgProcessingDays": 25,
+    "performanceScore": 82,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Patna West",
+      "Kankarbagh",
+      "Patliputra"
+    ],
+    "branchCode": "PNB-PAT-2104",
+    "note": "Experiencing high backlog. System may re-route application to BSCCDC or DBGB."
+  },
+  {
+    "id": "canara-patna-exhibition",
+    "name": "Canara Bank — Exhibition Road Commercial Branch",
+    "type": "PSB",
+    "address": "Exhibition Road, Beside LIC Building, Patna, Bihar – 800001",
+    "state": "Bihar",
+    "district": "Patna",
+    "pincode": "800001",
+    "lat": 25.6092,
+    "lng": 85.1415,
+    "phone": "0612-2321456",
+    "email": "cb0298@canarabank.com",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (12 active cases)",
+    "avgProcessingDays": 13,
+    "performanceScore": 91,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "CNB-PAT-298"
+  },
+  {
+    "id": "sca-andhra-apsccfc",
+    "partner_id": "sca-andhra-apsccfc",
+    "name": "Andhra Pradesh Scheduled Castes Co-operative Finance Corporation Ltd (APSCCFC)",
+    "type": "SCA",
+    "address": "3rd & 4th Floors, SP's River View Apartments, Beside Manipal Hospital, Tadepalli, Amaravathi, Guntur – 522501",
+    "state": "Andhra Pradesh",
+    "district": "Guntur",
+    "pincode": "522501",
+    "lat": 16.488,
+    "lng": 80.6062,
+    "phone": "040-23391039 / 23315970 / 23321141",
+    "email": "md_apsccfc@ap.gov.in",
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad"
+    ],
+    "supported_schemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad"
+    ],
+    "supportedCategories": [
+      "SC"
+    ],
+    "routingStatus": "available",
+    "routing_status": "demo_data",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (16 active cases)",
+    "avgProcessingDays": 16,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "last_verified": "2026-09-08",
+    "operatingArea": [
+      "Guntur",
+      "Krishna",
+      "Visakhapatnam",
+      "Kurnool",
+      "Ananthapuramu"
+    ],
+    "branchCode": "APSCCFC-GNT-HQ",
+    "source": "NSKFDC list of Channelizing Agencies (mirrored via devmosje.negd.in)",
+    "sourceUrl": "https://devmosje.negd.in/organisation_cat/nskfdc/page/7/",
+    "source_url": "https://devmosje.negd.in/organisation_cat/nskfdc/page/7/"
+  },
+  {
+    "id": "apgb-kadapa-ho",
+    "name": "Andhra Pragathi Grameena Bank (APGB) — Head Office",
+    "type": "RRB",
+    "address": "Mariapuram, Kadapa, Andhra Pradesh – 516003",
+    "state": "Andhra Pradesh",
+    "district": "Kadapa",
+    "pincode": "516003",
+    "lat": 14.4673,
+    "lng": 78.8242,
+    "phone": "08562-244144",
+    "email": "credit@apgb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (9 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "APGB-KDP-01"
+  },
+  {
+    "id": "cggb-guntur",
+    "name": "Chaitanya Godavari Grameena Bank — Guntur Main",
+    "type": "RRB",
+    "address": "Raghu Mansion, 4/1 Brodipet, Guntur, Andhra Pradesh – 522002",
+    "state": "Andhra Pradesh",
+    "district": "Guntur",
+    "pincode": "522002",
+    "lat": 16.3067,
+    "lng": 80.4365,
+    "phone": "0863-2231234",
+    "email": "guntur@cggb.co.in",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "nsfdc-suvidha"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (14 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "CGGB-GNT-01"
+  },
+  {
+    "id": "sbi-guntur-kothapet",
+    "name": "State Bank of India — Kothapet Branch, Guntur",
+    "type": "PSB",
+    "address": "Kothapet Main Road, Guntur, Andhra Pradesh – 522001",
+    "state": "Andhra Pradesh",
+    "district": "Guntur",
+    "pincode": "522001",
+    "lat": 16.3012,
+    "lng": 80.4421,
+    "phone": "0863-2224501",
+    "email": "sbi.guntur@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (20 active cases)",
+    "avgProcessingDays": 15,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "SBI-GNT-01"
+  },
+  {
+    "id": "ubi-vijayawada",
+    "name": "Union Bank of India — Governorpet Branch, Vijayawada",
+    "type": "PSB",
+    "address": "Governorpet, Vijayawada, Andhra Pradesh – 520002",
+    "state": "Andhra Pradesh",
+    "district": "Krishna",
+    "pincode": "520002",
+    "lat": 16.5167,
+    "lng": 80.6333,
+    "phone": "0866-2578912",
+    "email": "vijayawada@unionbankofindia.com",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "mudra-kishore"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (11 active cases)",
+    "avgProcessingDays": 14,
+    "performanceScore": 91,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "UBI-VJA-01"
+  },
+  {
+    "id": "sca-karnataka-brambedkar",
+    "partner_id": "sca-karnataka-brambedkar",
+    "name": "Dr. B.R. Ambedkar Development Corporation Ltd",
+    "type": "SCA",
+    "address": "Bengaluru, Karnataka",
+    "state": "Karnataka",
+    "district": "Bengaluru Urban",
+    "pincode": "560001",
+    "lat": 12.9784,
+    "lng": 77.5913,
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh"
+    ],
+    "supported_schemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh"
+    ],
+    "supportedCategories": [
+      "SC"
+    ],
+    "routingStatus": "available",
+    "routing_status": "demo_data",
+    "fundAvailability": "available",
+    "currentLoad": "Normal (34 active cases)",
+    "avgProcessingDays": 18,
+    "performanceScore": 90,
+    "lastStatusUpdate": "2026-09-08",
+    "last_verified": "2026-09-08",
+    "operatingArea": [
+      "Bengaluru Urban",
+      "Bengaluru Rural",
+      "Mysuru",
+      "Belagavi",
+      "Kalaburagi"
+    ],
+    "branchCode": "BRADC-BLR-HQ",
+    "source": "IndiaStat aggregation of NSKFDC State Channelising Agency list",
+    "sourceUrl": "https://www.indiastat.com/table/template/social-welfare-schemes/state-channelising-agency-wise-number-people-benef/662935",
+    "source_url": "https://www.indiastat.com/table/template/social-welfare-schemes/state-channelising-agency-wise-number-people-benef/662935",
+    "note": "Name confirmed from a public aggregator citing the official SCA list; full street address/contact not yet independently verified — verify directly before production use.",
+    "notes": "Name confirmed from a public aggregator citing the official SCA list; full street address/contact not yet independently verified — verify directly before production use."
+  },
+  {
+    "id": "kgb-bellary-ho",
+    "name": "Karnataka Gramin Bank (KGB) — Head Office & Bengaluru Hub",
+    "type": "RRB",
+    "address": "Gandhinagar, Ballari & Bengaluru Hub, Karnataka – 560009",
+    "state": "Karnataka",
+    "district": "Bengaluru Urban",
+    "pincode": "560009",
+    "lat": 12.9767,
+    "lng": 77.5713,
+    "phone": "080-22284560",
+    "email": "ho.credit@karnatakagraminbank.com",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "High Capacity (16 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "KGB-BLR-01"
+  },
+  {
+    "id": "canara-bangalore-townhall",
+    "name": "Canara Bank — Bengaluru Town Hall Branch",
+    "type": "PSB",
+    "address": "JC Road, Near Town Hall, Bengaluru, Karnataka – 560002",
+    "state": "Karnataka",
+    "district": "Bengaluru Urban",
+    "pincode": "560002",
+    "lat": 12.9634,
+    "lng": 77.5855,
+    "phone": "080-22223400",
+    "email": "cb0102@canarabank.com",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (22 active cases)",
+    "avgProcessingDays": 14,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "CNB-BLR-01"
+  },
+  {
+    "id": "sbi-bangalore-stmarks",
+    "name": "State Bank of India — St. Marks Road Commercial Branch",
+    "type": "PSB",
+    "address": "St. Marks Road, Bengaluru, Karnataka – 560001",
+    "state": "Karnataka",
+    "district": "Bengaluru Urban",
+    "pincode": "560001",
+    "lat": 12.9734,
+    "lng": 77.6012,
+    "phone": "080-25584123",
+    "email": "sbi.stmarks@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (18 active cases)",
+    "avgProcessingDays": 15,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "SBI-BLR-02"
+  },
+  {
+    "id": "kvgb-dharwad",
+    "name": "Karnataka Vikas Grameena Bank — Hubballi-Dharwad Branch",
+    "type": "RRB",
+    "address": "Belgaum Road, Dharwad, Karnataka – 580008",
+    "state": "Karnataka",
+    "district": "Dharwad",
+    "pincode": "580008",
+    "lat": 15.4589,
+    "lng": 75.0078,
+    "phone": "0836-2448321",
+    "email": "dharwad@kvgbank.com",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "nsfdc-suvidha"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (8 active cases)",
+    "avgProcessingDays": 10,
+    "performanceScore": 96,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "KVGB-DWD-01"
+  },
+  {
+    "id": "sca-maharashtra-mahatmaphule",
+    "partner_id": "sca-maharashtra-mahatmaphule",
+    "name": "Mahatma Phule Backward Class Development Corporation Ltd",
+    "type": "SCA",
+    "address": "Mumbai, Maharashtra",
+    "state": "Maharashtra",
+    "district": "Mumbai",
+    "pincode": "400049",
+    "lat": 19.103,
+    "lng": 72.8273,
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh"
+    ],
+    "supported_schemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh"
+    ],
+    "supportedCategories": [
+      "SC"
+    ],
+    "routingStatus": "limited",
+    "routing_status": "demo_data",
+    "fundAvailability": "limited",
+    "currentLoad": "High Backlog (85 active cases)",
+    "avgProcessingDays": 28,
+    "performanceScore": 82,
+    "lastStatusUpdate": "2026-09-08",
+    "last_verified": "2026-09-08",
+    "operatingArea": [
+      "Mumbai",
+      "Thane",
+      "Pune",
+      "Nagpur",
+      "Nashik",
+      "Aurangabad"
+    ],
+    "branchCode": "MPBCDC-MUM-HQ",
+    "source": "IndiaStat aggregation of NSKFDC State Channelising Agency list",
+    "sourceUrl": "https://www.indiastat.com/table/template/social-welfare-schemes/state-channelising-agency-wise-number-people-benef/662935",
+    "source_url": "https://www.indiastat.com/table/template/social-welfare-schemes/state-channelising-agency-wise-number-people-benef/662935",
+    "note": "Name confirmed from a public aggregator citing the official SCA list; full street address/contact not yet independently verified — verify directly before production use.",
+    "notes": "Name confirmed from a public aggregator citing the official SCA list; full street address/contact not yet independently verified — verify directly before production use."
+  },
+  {
+    "id": "bom-pune-lokmangal",
+    "name": "Bank of Maharashtra — Lokmangal Head Office & Pune Branch",
+    "type": "PSB",
+    "address": "1501, Shivaji Nagar, Pune, Maharashtra – 411005",
+    "state": "Maharashtra",
+    "district": "Pune",
+    "pincode": "411005",
+    "lat": 18.5314,
+    "lng": 73.8446,
+    "phone": "020-25532731",
+    "email": "bom.pune@mahabank.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (19 active cases)",
+    "avgProcessingDays": 13,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "BOM-PUN-01"
+  },
+  {
+    "id": "sbi-mumbai-fort",
+    "name": "State Bank of India — Fort Main Branch, Mumbai",
+    "type": "PSB",
+    "address": "Mumbai Samachar Marg, Fort, Mumbai, Maharashtra – 400001",
+    "state": "Maharashtra",
+    "district": "Mumbai",
+    "pincode": "400001",
+    "lat": 18.9322,
+    "lng": 72.8335,
+    "phone": "022-22661234",
+    "email": "sbi.fort@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india",
+      "nsfdc-els-abroad"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (25 active cases)",
+    "avgProcessingDays": 16,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "SBI-MUM-01"
+  },
+  {
+    "id": "mgb-aurangabad",
+    "name": "Maharashtra Gramin Bank — Head Office & Chhatrapati Sambhajinagar",
+    "type": "RRB",
+    "address": "Golibar Maidan, Chhatrapati Sambhajinagar (Aurangabad), Maharashtra – 431001",
+    "state": "Maharashtra",
+    "district": "Chhatrapati Sambhajinagar",
+    "pincode": "431001",
+    "lat": 19.8762,
+    "lng": 75.3433,
+    "phone": "0240-2345100",
+    "email": "credit@mahagramin.co.in",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "nsfdc-suvidha"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (11 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "MGB-AUR-01"
+  },
+  {
+    "id": "ubi-mumbai-nariman",
+    "name": "Union Bank of India — Nariman Point Main Branch",
+    "type": "PSB",
+    "address": "Union Bank Bhavan, 239 Vidhan Bhavan Marg, Nariman Point, Mumbai – 400021",
+    "state": "Maharashtra",
+    "district": "Mumbai",
+    "pincode": "400021",
+    "lat": 18.9256,
+    "lng": 72.8239,
+    "phone": "022-22892000",
+    "email": "nariman@unionbankofindia.com",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "mudra-kishore"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (14 active cases)",
+    "avgProcessingDays": 14,
+    "performanceScore": 91,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "UBI-MUM-01"
+  },
+  {
+    "id": "sca-gujarat-gscdc",
+    "partner_id": "sca-gujarat-gscdc",
+    "name": "Gujarat Safai Kamdar Vikas Nigam / Gujarat Scheduled Castes Development Corporation",
+    "type": "SCA",
+    "address": "Gandhinagar, Gujarat",
+    "state": "Gujarat",
+    "district": "Gandhinagar",
+    "pincode": "382010",
+    "lat": 23.2156,
+    "lng": 72.6369,
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh"
+    ],
+    "supported_schemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh"
+    ],
+    "supportedCategories": [
+      "SC"
+    ],
+    "routingStatus": "available",
+    "routing_status": "demo_data",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (22 active cases)",
+    "avgProcessingDays": 15,
+    "performanceScore": 91,
+    "lastStatusUpdate": "2026-09-08",
+    "last_verified": "2026-09-08",
+    "operatingArea": [
+      "Gandhinagar",
+      "Ahmedabad",
+      "Surat",
+      "Vadodara",
+      "Rajkot"
+    ],
+    "branchCode": "GSCDC-GNR-HQ",
+    "source": "socialjustice.gov.in NSFDC issue-tracking presentation (active-state disbursement list)",
+    "sourceUrl": "https://socialjustice.gov.in/writereaddata/Content/SNAPSHOT%20OF%20NSFDC%20ISSUES.pdf",
+    "source_url": "https://socialjustice.gov.in/writereaddata/Content/SNAPSHOT%20OF%20NSFDC%20ISSUES.pdf",
+    "note": "Full street address/contact not yet independently verified — verify directly before production use.",
+    "notes": "Full street address/contact not yet independently verified — verify directly before production use."
+  },
+  {
+    "id": "bggb-ahmedabad",
+    "name": "Baroda Gujarat Gramin Bank (BGGB) — Head Office & Ahmedabad Hub",
+    "type": "RRB",
+    "address": "Skyline Building, Ashram Road, Ahmedabad, Gujarat – 380009",
+    "state": "Gujarat",
+    "district": "Ahmedabad",
+    "pincode": "380009",
+    "lat": 23.0338,
+    "lng": 72.5684,
+    "phone": "079-26584210",
+    "email": "credit@bggb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (13 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "BGGB-AMD-01"
+  },
+  {
+    "id": "sbi-ahmedabad-bhadra",
+    "name": "State Bank of India — Bhadra Main Branch, Ahmedabad",
+    "type": "PSB",
+    "address": "Bhadra, Lal Darwaja, Ahmedabad, Gujarat – 380001",
+    "state": "Gujarat",
+    "district": "Ahmedabad",
+    "pincode": "380001",
+    "lat": 23.0245,
+    "lng": 72.5812,
+    "phone": "079-25507111",
+    "email": "sbi.bhadra@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (21 active cases)",
+    "avgProcessingDays": 14,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "SBI-AMD-01"
+  },
+  {
+    "id": "bob-ahmedabad-ashram",
+    "name": "Bank of Baroda — Zonal Office & Ashram Road Branch",
+    "type": "PSB",
+    "address": "Bank of Baroda Towers, Law Garden, Ellisbridge, Ahmedabad – 380006",
+    "state": "Gujarat",
+    "district": "Ahmedabad",
+    "pincode": "380006",
+    "lat": 23.0225,
+    "lng": 72.5562,
+    "phone": "079-26473000",
+    "email": "ashram@bankofbaroda.com",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "mudra-kishore"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (17 active cases)",
+    "avgProcessingDays": 13,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "BOB-AMD-01"
+  },
+  {
+    "id": "pnb-gandhinagar-sec11",
+    "name": "Punjab National Bank — Sector 11 Branch, Gandhinagar",
+    "type": "PSB",
+    "address": "CH Road, Sector 11, Gandhinagar, Gujarat – 382011",
+    "state": "Gujarat",
+    "district": "Gandhinagar",
+    "pincode": "382011",
+    "lat": 23.2189,
+    "lng": 72.645,
+    "phone": "079-23221045",
+    "email": "bo4100@pnb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (9 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "PNB-GNR-01"
+  },
+  {
+    "id": "sca-hp-hpscstdc",
+    "partner_id": "sca-hp-hpscstdc",
+    "name": "Himachal Pradesh Scheduled Castes & Scheduled Tribes Development Corporation (HPSCSTDC)",
+    "type": "SCA",
+    "address": "Shimla, Himachal Pradesh",
+    "state": "Himachal Pradesh",
+    "district": "Shimla",
+    "pincode": "171003",
+    "lat": 31.1048,
+    "lng": 77.1734,
+    "supportedSchemes": [
+      "nsfdc-mcf"
+    ],
+    "supported_schemes": [
+      "nsfdc-mcf"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST"
+    ],
+    "routingStatus": "available",
+    "routing_status": "demo_data",
+    "fundAvailability": "available",
+    "currentLoad": "Low (8 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "last_verified": "2026-09-08",
+    "operatingArea": [
+      "Shimla",
+      "Kangra",
+      "Mandi",
+      "Solan"
+    ],
+    "branchCode": "HPSCSTDC-SML-HQ",
+    "source": "HPSCSTDC official scheme page (state top-up scheme details)",
+    "sourceUrl": "https://hpscstdc.hp.gov.in/scheme/micro-credit-finance",
+    "source_url": "https://hpscstdc.hp.gov.in/scheme/micro-credit-finance",
+    "note": "This SCA also runs a state-topped-up variant (Ambedkar Laghu Rin Yojna) combining NSFDC MCF funds with a state capital subsidy — a good example of a state-specific scheme worth modeling separately if expanding coverage.",
+    "notes": "This SCA also runs a state-topped-up variant (Ambedkar Laghu Rin Yojna) combining NSFDC MCF funds with a state capital subsidy — a good example of a state-specific scheme worth modeling separately if expanding coverage."
+  },
+  {
+    "id": "hpgb-mandi-ho",
+    "name": "Himachal Pradesh Gramin Bank (HPGB) — Head Office & Regional Center",
+    "type": "RRB",
+    "address": "Jail Road, Mandi & Shimla Hub, Himachal Pradesh – 175001",
+    "state": "Himachal Pradesh",
+    "district": "Mandi",
+    "pincode": "175001",
+    "lat": 31.7084,
+    "lng": 76.9318,
+    "phone": "01905-227500",
+    "email": "hpgb.credit@hpgbank.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (7 active cases)",
+    "avgProcessingDays": 10,
+    "performanceScore": 96,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "HPGB-MND-01"
+  },
+  {
+    "id": "sbi-shimla-mall",
+    "name": "State Bank of India — The Mall Main Branch, Shimla",
+    "type": "PSB",
+    "address": "The Mall Road, Near Scandal Point, Shimla, Himachal Pradesh – 171001",
+    "state": "Himachal Pradesh",
+    "district": "Shimla",
+    "pincode": "171001",
+    "lat": 31.1033,
+    "lng": 77.1722,
+    "phone": "0177-2652140",
+    "email": "sbi.shimla@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (15 active cases)",
+    "avgProcessingDays": 14,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "SBI-SML-01"
+  },
+  {
+    "id": "pnb-shimla-ridge",
+    "name": "Punjab National Bank — The Ridge Branch, Shimla",
+    "type": "PSB",
+    "address": "The Ridge, Near Christ Church, Shimla, Himachal Pradesh – 171001",
+    "state": "Himachal Pradesh",
+    "district": "Shimla",
+    "pincode": "171001",
+    "lat": 31.1044,
+    "lng": 77.1756,
+    "phone": "0177-2658120",
+    "email": "bo0450@pnb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (8 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "PNB-SML-01"
+  },
+  {
+    "id": "uco-shimla-main",
+    "name": "UCO Bank — Shimla Main Branch",
+    "type": "PSB",
+    "address": "Cart Road, Shimla, Himachal Pradesh – 171001",
+    "state": "Himachal Pradesh",
+    "district": "Shimla",
+    "pincode": "171001",
+    "lat": 31.0989,
+    "lng": 77.1689,
+    "phone": "0177-2651110",
+    "email": "shimla@ucobank.co.in",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "pm-svanidhi"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (6 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "UCO-SML-01"
+  },
+  {
+    "id": "dsfdc-delhi-rohini",
+    "name": "Delhi SC/ST/OBC Finance & Development Corporation (DSFDC)",
+    "type": "SCA",
+    "address": "Ambedkar Bhawan, Sector 16, Rohini, Delhi – 110089",
+    "state": "Delhi",
+    "district": "North West Delhi",
+    "pincode": "110089",
+    "lat": 28.735,
+    "lng": 77.118,
+    "phone": "011-27881234",
+    "email": "dsfdc-delhi@nic.in",
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "High Availability (28 active allocations)",
+    "avgProcessingDays": 14,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "North West Delhi",
+      "North Delhi",
+      "West Delhi",
+      "East Delhi",
+      "South Delhi"
+    ],
+    "branchCode": "DSFDC-DEL-01"
+  },
+  {
+    "id": "pnb-delhi-cp",
+    "name": "Punjab National Bank — Connaught Place, New Delhi",
+    "type": "PSB",
+    "address": "7, Bhikaji Cama Place & Connaught Place, New Delhi – 110001",
+    "state": "Delhi",
+    "district": "Central Delhi",
+    "pincode": "110001",
+    "lat": 28.6315,
+    "lng": 77.2167,
+    "phone": "011-23411234",
+    "email": "pnb.cp@pnb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india",
+      "nsfdc-els-abroad",
+      "mudra-kishore",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (18 active cases)",
+    "avgProcessingDays": 14,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "operatingArea": [
+      "Central Delhi",
+      "North Delhi",
+      "South Delhi"
+    ],
+    "branchCode": "PNB-DEL-CP-01"
+  },
+  {
+    "id": "sbi-delhi-parliament",
+    "name": "State Bank of India — Parliament Street Branch",
+    "type": "PSB",
+    "address": "11, Parliament Street, New Delhi – 110001",
+    "state": "Delhi",
+    "district": "New Delhi",
+    "pincode": "110001",
+    "lat": 28.627,
+    "lng": 77.215,
+    "phone": "011-23374100",
+    "email": "sbi.parliament@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (20 active cases)",
+    "avgProcessingDays": 15,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "SBI-DEL-PS-01"
+  },
+  {
+    "id": "bob-delhi-nehruplace",
+    "name": "Bank of Baroda — Nehru Place Commercial Branch",
+    "type": "PSB",
+    "address": "Nehru Place Commercial Complex, New Delhi – 110019",
+    "state": "Delhi",
+    "district": "South Delhi",
+    "pincode": "110019",
+    "lat": 28.5492,
+    "lng": 77.2515,
+    "phone": "011-26418800",
+    "email": "nehruplace@bankofbaroda.com",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "mudra-kishore"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (9 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 91,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "BOB-DEL-NP-01"
+  },
+  {
+    "id": "canara-delhi-chandni",
+    "name": "Canara Bank — Chandni Chowk Branch",
+    "type": "PSB",
+    "address": "Chandni Chowk Main Road, Old Delhi – 110006",
+    "state": "Delhi",
+    "district": "North Delhi",
+    "pincode": "110006",
+    "lat": 28.6562,
+    "lng": 77.23,
+    "phone": "011-23861200",
+    "email": "cbchandni@canarabank.com",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "pm-svanidhi",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (8 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "CNB-DEL-CC-01"
+  },
+  {
+    "id": "sca-wb-wbscstdfc",
+    "name": "West Bengal SC ST Development & Finance Corporation (WBSCSTDFC)",
+    "type": "SCA",
+    "address": "CF-217/A/1, Sector-I, Salt Lake, Kolkata, West Bengal – 700064",
+    "state": "West Bengal",
+    "district": "Kolkata",
+    "pincode": "700064",
+    "lat": 22.5867,
+    "lng": 88.4172,
+    "phone": "033-23348123",
+    "email": "wbscstdfc@wb.gov.in",
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "High Availability (26 active allocations)",
+    "avgProcessingDays": 14,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "WBSC-KOL-HQ"
+  },
+  {
+    "id": "bgvb-kolkata",
+    "name": "Bangiya Gramin Vikash Bank — Salt Lake / Kolkata Hub",
+    "type": "RRB",
+    "address": "BMC House, NH-34, Salt Lake, Kolkata, West Bengal – 700091",
+    "state": "West Bengal",
+    "district": "North 24 Parganas",
+    "pincode": "700091",
+    "lat": 22.5726,
+    "lng": 88.432,
+    "phone": "033-23214500",
+    "email": "credit@bgvb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (12 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "BGVB-KOL-01"
+  },
+  {
+    "id": "sbi-kolkata-strand",
+    "name": "State Bank of India — Samriddhi Bhavan Main Branch, Kolkata",
+    "type": "PSB",
+    "address": "1, Strand Road, BBD Bagh, Kolkata, West Bengal – 700001",
+    "state": "West Bengal",
+    "district": "Kolkata",
+    "pincode": "700001",
+    "lat": 22.5744,
+    "lng": 88.347,
+    "phone": "033-22481234",
+    "email": "sbi.kolkatamain@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (24 active cases)",
+    "avgProcessingDays": 15,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "SBI-KOL-01"
+  },
+  {
+    "id": "pnb-kolkata-brabourne",
+    "name": "Punjab National Bank — Brabourne Road Branch, Kolkata",
+    "type": "PSB",
+    "address": "Brabourne Road, Kolkata, West Bengal – 700001",
+    "state": "West Bengal",
+    "district": "Kolkata",
+    "pincode": "700001",
+    "lat": 22.5801,
+    "lng": 88.3524,
+    "phone": "033-22354120",
+    "email": "bo0120@pnb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "mudra-kishore"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (9 active cases)",
+    "avgProcessingDays": 13,
+    "performanceScore": 91,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "PNB-KOL-01"
+  },
+  {
+    "id": "uco-kolkata-btm",
+    "name": "UCO Bank — Head Office & BTM Sarani Branch",
+    "type": "PSB",
+    "address": "10, BTM Sarani, Brabourne Road, Kolkata – 700001",
+    "state": "West Bengal",
+    "district": "Kolkata",
+    "pincode": "700001",
+    "lat": 22.5815,
+    "lng": 88.351,
+    "phone": "033-44557970",
+    "email": "btmsarani@ucobank.co.in",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "nsfdc-suvidha",
+      "pm-svanidhi"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (8 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "UCO-KOL-01"
+  },
+  {
+    "id": "sca-up-upscfdc",
+    "name": "UP Scheduled Castes Finance & Development Corporation Ltd (UPSCFDC)",
+    "type": "SCA",
+    "address": "B-2, B-Block, Picup Bhawan Road, Gomti Nagar, Lucknow, Uttar Pradesh – 226010",
+    "state": "Uttar Pradesh",
+    "district": "Lucknow",
+    "pincode": "226010",
+    "lat": 26.852,
+    "lng": 80.998,
+    "phone": "0522-2720456",
+    "email": "upscfdc-lko@nic.in",
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india"
+    ],
+    "supportedCategories": [
+      "SC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "High Capacity (35 active allocations)",
+    "avgProcessingDays": 14,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "UPSCFDC-LKO-HQ"
+  },
+  {
+    "id": "aryavart-lucknow-ho",
+    "name": "Aryavart Bank (RRB) — Head Office & Lucknow Main",
+    "type": "RRB",
+    "address": "A-2/46, Vijay Khand, Gomti Nagar, Lucknow, Uttar Pradesh – 226010",
+    "state": "Uttar Pradesh",
+    "district": "Lucknow",
+    "pincode": "226010",
+    "lat": 26.861,
+    "lng": 80.995,
+    "phone": "0522-2398871",
+    "email": "credit@aryavart-rrb.com",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (16 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "ARYA-LKO-01"
+  },
+  {
+    "id": "sbi-lucknow-hazratganj",
+    "name": "State Bank of India — Hazratganj Main Branch, Lucknow",
+    "type": "PSB",
+    "address": "MG Marg, Hazratganj, Lucknow, Uttar Pradesh – 226001",
+    "state": "Uttar Pradesh",
+    "district": "Lucknow",
+    "pincode": "226001",
+    "lat": 26.8489,
+    "lng": 80.945,
+    "phone": "0522-2287410",
+    "email": "sbi.hazratganj@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (23 active cases)",
+    "avgProcessingDays": 15,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "SBI-LKO-01"
+  },
+  {
+    "id": "bob-lucknow-hazratganj",
+    "name": "Bank of Baroda — Hazratganj Commercial Branch",
+    "type": "PSB",
+    "address": "Shahnajaf Road, Hazratganj, Lucknow, Uttar Pradesh – 226001",
+    "state": "Uttar Pradesh",
+    "district": "Lucknow",
+    "pincode": "226001",
+    "lat": 26.851,
+    "lng": 80.948,
+    "phone": "0522-2239010",
+    "email": "hazratganj@bankofbaroda.com",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "mudra-kishore"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (10 active cases)",
+    "avgProcessingDays": 13,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "BOB-LKO-01"
+  },
+  {
+    "id": "prathama-moradabad",
+    "name": "Prathama UP Gramin Bank — Head Office & Regional Hub",
+    "type": "RRB",
+    "address": "Ram Ganga Vihar Phase-II, Moradabad, Uttar Pradesh – 244001",
+    "state": "Uttar Pradesh",
+    "district": "Moradabad",
+    "pincode": "244001",
+    "lat": 28.841,
+    "lng": 78.776,
+    "phone": "0591-2455172",
+    "email": "credit@prathamaupbank.com",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "nsfdc-suvidha"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (14 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "PUPB-MBD-01"
+  },
+  {
+    "id": "sca-tn-tahdco",
+    "name": "Tamil Nadu Adi Dravidar Housing and Development Corp (TAHDCO)",
+    "type": "SCA",
+    "address": "No. 31, Cenotaph Road, Teynampet, Chennai, Tamil Nadu – 600018",
+    "state": "Tamil Nadu",
+    "district": "Chennai",
+    "pincode": "600018",
+    "lat": 13.0382,
+    "lng": 80.2456,
+    "phone": "044-24344123",
+    "email": "tahdco@tn.gov.in",
+    "supportedSchemes": [
+      "nsfdc-msy",
+      "nsfdc-mcf",
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "High Availability (29 active cases)",
+    "avgProcessingDays": 15,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "TAHDCO-CHN-HQ"
+  },
+  {
+    "id": "tngb-salem-ho",
+    "name": "Tamil Nadu Grama Bank (TNGB) — Head Office & Chennai Hub",
+    "type": "RRB",
+    "address": "Yercaud Road, Hasthampatti, Salem & Chennai Regional Hub, Tamil Nadu – 636007",
+    "state": "Tamil Nadu",
+    "district": "Salem",
+    "pincode": "636007",
+    "lat": 11.671,
+    "lng": 78.163,
+    "phone": "0427-2403000",
+    "email": "credit@tngb.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "mudra-shishu"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Optimal (11 active cases)",
+    "avgProcessingDays": 11,
+    "performanceScore": 95,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "TNGB-SLM-01"
+  },
+  {
+    "id": "indianbank-chennai-rajaji",
+    "name": "Indian Bank — Rajaji Salai Main Branch, Chennai",
+    "type": "PSB",
+    "address": "Corporate Office Building, 254-260 Avvai Shanmugam Salai, Chennai – 600001",
+    "state": "Tamil Nadu",
+    "district": "Chennai",
+    "pincode": "600001",
+    "lat": 13.089,
+    "lng": 80.292,
+    "phone": "044-25221234",
+    "email": "chennaimain@indianbank.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "stand-up-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (21 active cases)",
+    "avgProcessingDays": 14,
+    "performanceScore": 93,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "IB-CHN-01"
+  },
+  {
+    "id": "sbi-chennai-georgetown",
+    "name": "State Bank of India — George Town Branch, Chennai",
+    "type": "PSB",
+    "address": "Rajaji Salai, George Town, Chennai, Tamil Nadu – 600001",
+    "state": "Tamil Nadu",
+    "district": "Chennai",
+    "pincode": "600001",
+    "lat": 13.091,
+    "lng": 80.294,
+    "phone": "044-25340110",
+    "email": "sbi.georgetown@sbi.co.in",
+    "supportedSchemes": [
+      "nsfdc-suvidha",
+      "nsfdc-utkarsh",
+      "nsfdc-els-india"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC",
+      "General"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Moderate (19 active cases)",
+    "avgProcessingDays": 15,
+    "performanceScore": 92,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "SBI-CHN-01"
+  },
+  {
+    "id": "canara-chennai-annasalai",
+    "name": "Canara Bank — Anna Salai Commercial Branch",
+    "type": "PSB",
+    "address": "563, Anna Salai, Teynampet, Chennai, Tamil Nadu – 600018",
+    "state": "Tamil Nadu",
+    "district": "Chennai",
+    "pincode": "600018",
+    "lat": 13.041,
+    "lng": 80.248,
+    "phone": "044-24345560",
+    "email": "cbannasalai@canarabank.com",
+    "supportedSchemes": [
+      "nsfdc-mcf",
+      "nsfdc-msy",
+      "pm-svanidhi"
+    ],
+    "supportedCategories": [
+      "SC",
+      "ST",
+      "OBC"
+    ],
+    "routingStatus": "available",
+    "fundAvailability": "available",
+    "currentLoad": "Low (8 active cases)",
+    "avgProcessingDays": 12,
+    "performanceScore": 94,
+    "lastStatusUpdate": "2026-09-08",
+    "branchCode": "CNB-CHN-01"
+  }
+]
