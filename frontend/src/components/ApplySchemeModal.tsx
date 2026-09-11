@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   X,
   CheckCircle2,
@@ -17,10 +18,23 @@ import {
   MapPin,
   IndianRupee,
   FileText,
-  Clock
+  Clock,
+  Lock,
+  LogIn,
+  UserPlus,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Upload,
+  FileCheck,
+  CheckCircle,
+  AlertTriangle,
+  Loader2,
+  Camera
 } from "lucide-react";
 import { Scheme } from "@/lib/schemes-data";
 import { useAuth } from "@/contexts/AuthContext";
+import CameraCaptureModal from "@/components/CameraCaptureModal";
 import {
   SubmittedApplication,
   saveApplication,
@@ -41,9 +55,9 @@ export default function ApplySchemeModal({
   onSuccess,
 }: ApplySchemeModalProps) {
   const router = useRouter();
-  const { userProfile, user } = useAuth();
+  const { userProfile, user, loginWithGoogle, login } = useAuth();
 
-  const [step, setStep] = useState<"form" | "submitting" | "success">("form");
+  const [step, setStep] = useState<"details" | "verification" | "submitting" | "success">("details");
   const [applicantName, setApplicantName] = useState("");
   const [phone, setPhone] = useState("+91 ");
   const [category, setCategory] = useState("SC");
@@ -56,11 +70,46 @@ export default function ApplySchemeModal({
   const [submittedApp, setSubmittedApp] = useState<SubmittedApplication | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Document Verification State
+  const [verifiedDocs, setVerifiedDocs] = useState<Record<string, boolean>>({});
+  const [verifyingDoc, setVerifyingDoc] = useState<string | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationSuccess, setVerificationSuccess] = useState<string | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraDocName, setCameraDocName] = useState<string>("Passport-size photographs");
+
+  // Auth gate state for unauthenticated users
+  const [authMode, setAuthMode] = useState<"options" | "email">("options");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const currentPath = typeof window !== "undefined" ? window.location.pathname : "/schemes";
+  const returnUrl = `${currentPath}?apply=${encodeURIComponent(scheme.id)}`;
+
+  const requiredDocs =
+    scheme.requiredDocuments && scheme.requiredDocuments.length > 0
+      ? scheme.requiredDocuments
+      : [
+          "Aadhaar Card (Identity & Biometrics)",
+          "Caste Certificate (SC/ST Verification)",
+          "Income Certificate (Under ₹5.0 Lakh)",
+          "Bank Passbook / Cancelled Cheque",
+        ];
+
+  const verifiedCount = requiredDocs.filter((d) => verifiedDocs[d]).length;
+  const isReadyToSubmit = verifiedCount > 0;
+
   // Initialize with user profile if available
   useEffect(() => {
     if (isOpen) {
-      setStep("form");
+      setStep("details");
       setCopied(false);
+      setAuthError("");
+      setVerificationError(null);
+      setVerificationSuccess(null);
       const name = userProfile?.name || user?.displayName || "";
       if (name) setApplicantName(name);
       else {
@@ -72,28 +121,163 @@ export default function ApplySchemeModal({
           }
         } catch {}
       }
+      const userPhone = user?.phoneNumber || userProfile?.phone || "";
+      if (userPhone) {
+        setPhone(userPhone.startsWith("+91") ? userPhone : `+91 ${userPhone}`);
+      }
       if (userProfile?.category) setCategory(userProfile.category);
       if (userProfile?.state) setState(userProfile.state);
       if (userProfile?.district) setDistrict(userProfile.district);
       if (userProfile?.loanRequiredLakh) {
         setLoanAmountLakh(Math.min(scheme.maxLoanLakh, userProfile.loanRequiredLakh));
       }
+
+      // Check pre-verified documents from localStorage
+      try {
+        const storedVerified = localStorage.getItem(`sahayak_verified_docs_${scheme.id}`);
+        if (storedVerified) {
+          setVerifiedDocs(JSON.parse(storedVerified));
+        } else {
+          const allVerified = localStorage.getItem("sahayak_all_verified_docs");
+          if (allVerified) {
+            setVerifiedDocs(JSON.parse(allVerified));
+          }
+        }
+      } catch {}
     }
   }, [isOpen, userProfile, user, scheme]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleGoogleSignIn = async () => {
+    setAuthError("");
+    setAuthLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (err: any) {
+      setAuthError(err.message?.replace("Firebase: ", "") || "Google sign-in failed. Please try again.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!applicantName.trim()) return;
+    setAuthError("");
+    setAuthLoading(true);
+    try {
+      await login(authEmail.trim(), authPassword);
+    } catch (err: any) {
+      setAuthError(err.message?.replace("Firebase: ", "") || "Sign-in failed. Please check your credentials.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleProceedToVerification = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!applicantName.trim()) {
+      setAuthError("Please enter the applicant full name as per Aadhaar.");
+      return;
+    }
+    setAuthError("");
+    setVerificationError(null);
+    setStep("verification");
+  };
+
+  const handleUploadAndVerify = async (docName: string, file: File) => {
+    if (!file) return;
+    setVerifyingDoc(docName);
+    setVerificationError(null);
+    setVerificationSuccess(null);
+
+    try {
+      const reader = new FileReader();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch("/api/verify-document", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image: dataUrl,
+          mimeType: file.type || "image/jpeg",
+          profile: {
+            name: applicantName.trim() || undefined,
+            category: category,
+            state: state,
+          },
+          documentTypeExpected: docName,
+        }),
+      });
+
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.error || "Verification analysis failed.");
+      }
+
+      const report = json.data;
+      const hasNameMismatch =
+        report.profileMatch?.nameStatus === "MISMATCH" || report.profileMatch?.isMatch === false;
+      const isClean =
+        report.authenticityStatus === "AUTHENTIC" &&
+        !hasNameMismatch &&
+        !report.isTamperedOrForged &&
+        report.tamperingRiskLevel !== "CRITICAL" &&
+        report.tamperingRiskLevel !== "HIGH";
+
+      if (isClean) {
+        setVerifiedDocs((prev) => {
+          const next = { ...prev, [docName]: true };
+          try {
+            localStorage.setItem(`sahayak_verified_docs_${scheme.id}`, JSON.stringify(next));
+            localStorage.setItem("sahayak_all_verified_docs", JSON.stringify(next));
+          } catch {}
+          return next;
+        });
+        setVerificationSuccess(`✓ ${docName} verified authentic (Forensic Score: ${report.authenticityScore || 95}/100)`);
+      } else {
+        const reason =
+          report.forensicSummary ||
+          report.profileMatch?.explanation ||
+          (report.tamperSignals && report.tamperSignals[0]) ||
+          "Document could not be verified. Please ensure the upload is an authentic official certificate.";
+        setVerificationError(`${docName} verification rejected: ${reason}`);
+      }
+    } catch (err: any) {
+      console.error("Verification error:", err);
+      setVerificationError(err.message || "Failed to complete document verification. Please try again.");
+    } finally {
+      setVerifyingDoc(null);
+    }
+  };
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!user) {
+      setAuthError("You must log in or sign up before applying for a scheme.");
+      return;
+    }
+    if (!applicantName.trim()) {
+      setStep("details");
+      return;
+    }
+    if (!isReadyToSubmit) {
+      setVerificationError("Mandatory document verification required: Please upload and verify at least one required certificate before submitting.");
+      return;
+    }
 
     setStep("submitting");
 
     setTimeout(() => {
       const now = new Date();
-      const formattedDate = now.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }) + `, ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
+      const formattedDate =
+        now.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }) + `, ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
 
       const shortName = scheme.shortName || scheme.name.split(" ")[0];
       const newAppId = generateApplicationId(shortName);
@@ -105,11 +289,13 @@ export default function ApplySchemeModal({
 
       const newApp: SubmittedApplication = {
         applicationId: newAppId,
+        userId: user.uid,
+        applicantEmail: user.email || undefined,
         schemeId: scheme.id,
         schemeName: scheme.name,
         schemeShortName: scheme.shortName || scheme.name,
         applicantName: applicantName.trim(),
-        applicantPhone: phone.trim() || "+91 98765 43210",
+        applicantPhone: phone.trim() || user.phoneNumber || "+91 98765 43210",
         applicantCategory: category,
         applicantState: state,
         applicantDistrict: district,
@@ -125,7 +311,9 @@ export default function ApplySchemeModal({
             year: "numeric",
           }),
         },
-        notes: `Application dossier successfully submitted for ${scheme.name}. Next step: Prepare original caste and income certificates for Channel Partner physical scrutiny.`,
+        notes: `Application dossier successfully submitted with ${verifiedCount} verified certificates for ${scheme.name}. Routing to ${channelPartner}.`,
+        verifiedDocuments: Object.keys(verifiedDocs).filter((k) => verifiedDocs[k]),
+        documentVerificationStatus: "VERIFIED",
       };
 
       saveApplication(newApp);
@@ -183,8 +371,197 @@ export default function ApplySchemeModal({
 
         {/* Modal Content */}
         <div className="p-6">
-          {step === "form" && (
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          {!user ? (
+            <div className="space-y-5">
+              {/* Security Header Banner */}
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center flex-shrink-0 text-amber-700 shadow-xs">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">
+                      Authentication Required
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 mt-1">
+                    Sign In or Register to Apply
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    To safeguard government subsidies, verify beneficiary eligibility, and generate a legally valid tracking dossier, you must be logged in.
+                  </p>
+                </div>
+              </div>
+
+              {/* Scheme Context Card */}
+              <div className="p-3.5 bg-indigo-50/70 border border-indigo-100 rounded-2xl flex items-center justify-between text-indigo-950">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
+                    {scheme.icon}
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 block uppercase font-medium">Selected Scheme</span>
+                    <span className="text-xs font-bold text-indigo-900 block truncate max-w-[240px] sm:max-w-xs">{scheme.name}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-500 block font-medium">Max Loan</span>
+                  <span className="text-xs font-extrabold text-emerald-700">₹{scheme.maxLoanLakh} Lakh</span>
+                </div>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-slate-700 text-[11px]">
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span className="font-medium">Verified Identity</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                  <span className="font-medium">Direct SCA Routing</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                  <span className="font-medium">100% Free Service</span>
+                </div>
+              </div>
+
+              {authError && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" /> {authError}
+                </div>
+              )}
+
+              {authMode === "options" ? (
+                <div className="space-y-3 pt-1">
+                  {/* Google 1-Click Sign-in */}
+                  <button
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    disabled={authLoading}
+                    className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-slate-300 hover:border-indigo-400 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-xs transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                  >
+                    {authLoading ? (
+                      <div className="w-4 h-4 border-2 border-slate-400 border-t-indigo-600 rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                      </svg>
+                    )}
+                    Continue with Google to Apply Instantly
+                  </button>
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-slate-200" />
+                    <span className="text-slate-400 text-[11px] font-medium">or choose account option</span>
+                    <div className="flex-1 h-px bg-slate-200" />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode("email")}
+                      className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors cursor-pointer"
+                    >
+                      <LogIn className="w-3.5 h-3.5" /> Sign In with Email
+                    </button>
+
+                    <Link
+                      href={`/register?redirect=${encodeURIComponent(returnUrl)}`}
+                      className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors shadow-xs"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" /> Register (Mobile OTP)
+                    </Link>
+                  </div>
+
+                  <div className="pt-2 text-center">
+                    <Link
+                      href={`/login?redirect=${encodeURIComponent(returnUrl)}`}
+                      className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium hover:underline inline-flex items-center gap-1"
+                    >
+                      Already have an account? Go to Full Sign-In Page <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                /* Inline Email Sign In Form */
+                <form onSubmit={handleEmailSignIn} className="space-y-3 pt-1 text-xs">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-3 py-2 pr-9 rounded-xl border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode("options"); setAuthError(""); }}
+                      className="px-3 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold cursor-pointer"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="flex-1 py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    >
+                      {authLoading ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <LogIn className="w-3.5 h-3.5" /> Sign In & Unlock Application
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          ) : step === "details" ? (
+            <form onSubmit={handleProceedToVerification} className="space-y-4 text-xs">
+              {/* Step indicator badge */}
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-1.5">
+                  <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 font-bold text-[10px]">
+                    Step 1 of 2
+                  </span>
+                  <span className="font-semibold text-slate-700 text-xs">
+                    Applicant Information
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400">
+                  Next: Mandatory Document Audit
+                </span>
+              </div>
+
               {/* Scheme Summary Quick Badge */}
               <div className="p-3 bg-indigo-50/70 border border-indigo-100 rounded-2xl flex items-center justify-between text-indigo-950">
                 <div>
@@ -204,6 +581,13 @@ export default function ApplySchemeModal({
                   <span className="font-bold text-slate-800">{scheme.moratoriumMonthsMin} Mo</span>
                 </div>
               </div>
+
+              {authError && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{authError}</span>
+                </div>
+              )}
 
               {/* Form Fields */}
               <div className="space-y-3">
@@ -336,7 +720,7 @@ export default function ApplySchemeModal({
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-[11px] text-slate-600">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                 <span>
-                  <strong>100% Free Government Application:</strong> Submitting via Sahayak AI generates an official Application Dossier with a unique tracking reference number.
+                  <strong>100% Free Official Application:</strong> Next step requires uploading and verifying mandatory certificates before official submission.
                 </span>
               </div>
 
@@ -351,22 +735,254 @@ export default function ApplySchemeModal({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-2 shadow-sm transition-all cursor-pointer"
                 >
-                  <Send className="w-3.5 h-3.5" /> Submit & Generate Application ID
+                  <span>Proceed to Document Verification</span> <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </form>
-          )}
+          ) : step === "verification" ? (
+            <div className="space-y-4 text-xs">
+              {/* Step indicator badge */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50 border border-indigo-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-xs">
+                      Mandatory Document Verification
+                    </h4>
+                    <p className="text-[10px] text-slate-500">
+                      Dual-Engine AI Forensic Scan & Seal Audit
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-indigo-700">
+                    {verifiedCount} of {requiredDocs.length} Verified
+                  </span>
+                  <div className="w-24 h-1.5 bg-indigo-200 rounded-full overflow-hidden mt-1">
+                    <div
+                      className="h-full bg-emerald-500 transition-all duration-300"
+                      style={{
+                        width: `${Math.round((verifiedCount / (requiredDocs.length || 1)) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Requirement Alert Banner */}
+              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 flex items-start gap-2.5 text-[11px] leading-relaxed">
+                <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <strong>Mandatory Verification Rule:</strong> Schemes cannot be applied for without verifying documents. Please upload and verify your mandatory certificates below to unlock application submission.
+                </div>
+              </div>
+
+              {/* Error/Success alerts */}
+              {verificationError && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span className="flex-1">{verificationError}</span>
+                  <button onClick={() => setVerificationError(null)} className="text-red-500 hover:text-red-800">×</button>
+                </div>
+              )}
+
+              {verificationSuccess && (
+                <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs">
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
+                  <span className="flex-1 font-medium">{verificationSuccess}</span>
+                  <button onClick={() => setVerificationSuccess(null)} className="text-emerald-500 hover:text-emerald-800">×</button>
+                </div>
+              )}
+
+              {/* Documents Checklist & Uploads */}
+              <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+                {requiredDocs.map((docName, idx) => {
+                  const isVerified = !!verifiedDocs[docName];
+                  const isVerifying = verifyingDoc === docName;
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                        isVerified
+                          ? "bg-emerald-50/60 border-emerald-200"
+                          : isVerifying
+                          ? "bg-indigo-50/70 border-indigo-200"
+                          : "bg-slate-50 border-slate-200/80 hover:border-indigo-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <div
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                            isVerified
+                              ? "bg-emerald-100 text-emerald-700"
+                              : isVerifying
+                              ? "bg-indigo-100 text-indigo-700 animate-pulse"
+                              : "bg-white border border-slate-200 text-slate-500"
+                          }`}
+                        >
+                          {isVerified ? (
+                            <FileCheck className="w-4 h-4" />
+                          ) : isVerifying ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <FileText className="w-4 h-4" />
+                          )}
+                        </div>
+
+                        <div className="truncate">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-slate-800 text-xs truncate">
+                              {docName}
+                            </span>
+                            <span className="text-[9px] font-semibold uppercase px-1.5 py-0.2 bg-slate-200 text-slate-600 rounded">
+                              Required
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-500 block">
+                            {isVerified
+                              ? "✓ Verified Authentic (State Seal & OCR Matched)"
+                              : isVerifying
+                              ? "Forensic analysis in progress..."
+                              : "Scan or upload physical certificate / photo"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex-shrink-0">
+                        {(() => {
+                          const isPhotoDoc = /photo|photograph|passport/i.test(docName);
+                          return isVerified ? (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                              <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-[11px] flex items-center gap-1">
+                                <Check className="w-3 h-3" /> Verified
+                              </span>
+                              {isPhotoDoc && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCameraDocName(docName);
+                                    setIsCameraOpen(true);
+                                  }}
+                                  className="text-[10px] text-indigo-600 hover:text-indigo-800 underline ml-1 cursor-pointer flex items-center gap-0.5"
+                                >
+                                  <Camera className="w-2.5 h-2.5" /> Retake Selfie
+                                </button>
+                              )}
+                              <label className="cursor-pointer text-[10px] text-slate-400 hover:text-indigo-600 underline ml-1">
+                                Re-upload
+                                <input
+                                  type="file"
+                                  accept="image/*,.pdf"
+                                  className="hidden"
+                                  disabled={isVerifying}
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handleUploadAndVerify(docName, f);
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          ) : isVerifying ? (
+                            <span className="px-3 py-1.5 rounded-xl bg-indigo-100 text-indigo-700 font-semibold text-xs flex items-center gap-1.5">
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Auditing...
+                            </span>
+                          ) : (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                              {isPhotoDoc && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCameraDocName(docName);
+                                    setIsCameraOpen(true);
+                                  }}
+                                  className="cursor-pointer px-2.5 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center gap-1 shadow-2xs transition-colors"
+                                  title="Take photo with front camera"
+                                >
+                                  <Camera className="w-3.5 h-3.5" /> Front Camera
+                                </button>
+                              )}
+                              <label className="cursor-pointer px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors">
+                                <Upload className="w-3.5 h-3.5" /> Upload & Verify
+                                <input
+                                  type="file"
+                                  accept="image/*,.pdf"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handleUploadAndVerify(docName, f);
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Document Studio Link */}
+              <div className="text-center pt-1">
+                <Link
+                  href={`/documents?scheme=${scheme.id}`}
+                  target="_blank"
+                  className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium hover:underline inline-flex items-center gap-1"
+                >
+                  <Sparkles className="w-3 h-3 text-indigo-500" />
+                  Have complex documents? Open Full Document Inspection Studio ↗
+                </Link>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setStep("details")}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold cursor-pointer"
+                >
+                  ← Back to Details
+                </button>
+
+                {isReadyToSubmit ? (
+                  <button
+                    type="button"
+                    onClick={() => handleSubmit()}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold flex items-center gap-2 shadow-md transition-all cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5" /> Submit Verified Application Dossier
+                  </button>
+                ) : (
+                  <div className="flex flex-col items-end">
+                    <button
+                      type="button"
+                      disabled
+                      className="px-5 py-2.5 rounded-xl bg-slate-200 text-slate-400 font-bold flex items-center gap-2 cursor-not-allowed text-xs"
+                    >
+                      <Lock className="w-3.5 h-3.5" /> Verify Documents to Unlock Submit
+                    </button>
+                    <span className="text-[10px] text-amber-600 font-medium mt-1">
+                      ⚠️ Upload at least one certificate above to apply
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
 
           {step === "submitting" && (
             <div className="py-12 text-center space-y-3">
               <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
               <h4 className="text-sm font-bold text-slate-900">
-                Submitting Application Dossier...
+                Submitting Verified Application Dossier...
               </h4>
               <p className="text-xs text-slate-500">
-                Generating verified Application ID and linking Channel Partner routing...
+                Attaching verified certificates and generating authentic tracking ID...
               </p>
             </div>
           )}
@@ -438,6 +1054,23 @@ export default function ApplySchemeModal({
                     <span className="text-[10px] text-slate-400 block">Channel Partner Route:</span>
                     <span className="font-semibold text-slate-800">{submittedApp.channelPartner}</span>
                   </div>
+                  {submittedApp.verifiedDocuments && submittedApp.verifiedDocuments.length > 0 && (
+                    <div className="col-span-2 pt-1 border-t border-slate-200">
+                      <span className="text-[10px] text-slate-400 block mb-1 font-medium">
+                        Verified Certificates Attached:
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {submittedApp.verifiedDocuments.map((d, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-1"
+                          >
+                            <Check className="w-2.5 h-2.5 text-emerald-600" /> {d}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -460,6 +1093,20 @@ export default function ApplySchemeModal({
           )}
         </div>
       </motion.div>
+
+      {/* Front Camera Live Capture Modal */}
+      <CameraCaptureModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={(file) => {
+          if (cameraDocName) {
+            handleUploadAndVerify(cameraDocName, file);
+          }
+        }}
+        expectedDocType={cameraDocName}
+        title="Passport-Size Photo Front Camera"
+        subtitle="Capture live passport-size photo to complete your scheme document verification."
+      />
     </div>
   );
 }

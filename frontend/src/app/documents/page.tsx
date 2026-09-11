@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { SCHEMES, getSchemeById } from "@/lib/schemes-data";
 import { useAuth } from "@/contexts/AuthContext";
+import CameraCaptureModal from "@/components/CameraCaptureModal";
 
 interface VerificationReport {
   isGovernmentDocument: boolean;
@@ -33,6 +34,21 @@ interface VerificationReport {
   isTamperedOrForged: boolean;
   tamperingRiskLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   tamperSignals: string[];
+  biometricAudit?: {
+    photoDetected: boolean;
+    faceTamperStatus: "PASS" | "SUSPICIOUS" | "MISSING_PHOTO" | "FACE_SWAP_DETECTED";
+    clarityScore: number;
+    hologramOverlapVerified: boolean;
+    biometricSummary: string;
+  };
+  templateAudit?: {
+    templateNameMatched: string;
+    templateCompliance: "FULL_MATCH" | "PARTIAL_DEVIATION" | "NON_STANDARD_TEMPLATE" | "REJECTED";
+    officialHeaderVerified: boolean;
+    stampAndSignatureVerified: boolean;
+    securityWatermarkPattern: boolean;
+    templateSummary: string;
+  };
   extractedData: {
     fullName?: string;
     dob?: string;
@@ -207,8 +223,18 @@ export default function DocumentsPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [report, setReport] = useState<VerificationReport | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCameraCapture = (file: File, dataUrl: string) => {
+    setErrorMsg(null);
+    setReport(null);
+    setJustVerifiedDoc(null);
+    setSelectedFile(file);
+    setPreviewUrl(dataUrl);
+    runVerification(dataUrl, "image/jpeg", file.name);
+  };
 
   // Load saved checklist ticks from localStorage on scheme change
   useEffect(() => {
@@ -238,6 +264,8 @@ export default function DocumentsPage() {
   }, [userProfile]);
 
   const scheme = getSchemeById(selectedSchemeId) || SCHEMES[0];
+  const isReportMismatch = report?.profileMatch?.nameStatus === "MISMATCH" || report?.profileMatch?.isMatch === false;
+  const isReportAuthentic = report?.authenticityStatus === "AUTHENTIC" && !isReportMismatch;
 
   // Keep targetDocType aligned with scheme requirements
   useEffect(() => {
@@ -351,11 +379,17 @@ export default function DocumentsPage() {
 
       setReport(json.data);
 
-      // Automatically tick off document in checklist if scanned and checked without error:
+      // Automatically tick off document in checklist ONLY if authentic AND profile matched without error:
+      const hasNameMismatch = json.data.profileMatch?.nameStatus === "MISMATCH" || json.data.profileMatch?.isMatch === false;
+      const hasDobMismatch = json.data.profileMatch?.dobStatus === "MISMATCH";
+
       const isClean =
-        json.data.authenticityStatus !== "NOT_A_DOCUMENT" &&
-        json.data.authenticityStatus !== "BLATANT_FAKE" &&
-        (!json.data.isTamperedOrForged || json.data.tamperingRiskLevel !== "CRITICAL");
+        json.data.authenticityStatus === "AUTHENTIC" &&
+        !hasNameMismatch &&
+        !hasDobMismatch &&
+        !json.data.isTamperedOrForged &&
+        json.data.tamperingRiskLevel !== "CRITICAL" &&
+        json.data.tamperingRiskLevel !== "HIGH";
 
       if (isClean) {
         const matchedReq = findMatchingChecklistDoc(
@@ -522,33 +556,68 @@ export default function DocumentsPage() {
                           </div>
                         </div>
 
-                        {isChecked ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setTargetDocType(doc);
-                              fileInputRef.current?.click();
-                            }}
-                            className="flex-shrink-0 text-[10px] font-semibold text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer"
-                            title={`Re-upload and verify ${doc}`}
-                          >
-                            Re-scan
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setTargetDocType(doc);
-                              fileInputRef.current?.click();
-                            }}
-                            className="flex-shrink-0 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-100 transition-colors inline-flex items-center gap-1 cursor-pointer"
-                            title={`Upload and verify ${doc}`}
-                          >
-                            <Upload className="w-3 h-3" /> Upload & Verify
-                          </button>
-                        )}
+                        {(() => {
+                          const isPhotoDoc = /photo|photograph|passport/i.test(doc);
+                          return isChecked ? (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                              {isPhotoDoc && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setTargetDocType(doc);
+                                    setIsCameraOpen(true);
+                                  }}
+                                  className="flex-shrink-0 text-[10px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-lg border border-indigo-200 transition-colors cursor-pointer flex items-center gap-1"
+                                  title={`Capture photo via front camera`}
+                                >
+                                  <Camera className="w-3 h-3" /> Camera
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setTargetDocType(doc);
+                                  fileInputRef.current?.click();
+                                }}
+                                className="flex-shrink-0 text-[10px] font-semibold text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                                title={`Re-upload and verify ${doc}`}
+                              >
+                                Re-scan
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                              {isPhotoDoc && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setTargetDocType(doc);
+                                    setIsCameraOpen(true);
+                                  }}
+                                  className="flex-shrink-0 text-[11px] font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 px-2.5 py-1 rounded-lg shadow-xs transition-all inline-flex items-center gap-1 cursor-pointer"
+                                  title={`Take passport-size photo using front camera`}
+                                >
+                                  <Camera className="w-3 h-3" /> Front Camera
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setTargetDocType(doc);
+                                  fileInputRef.current?.click();
+                                }}
+                                className="flex-shrink-0 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-100 transition-colors inline-flex items-center gap-1 cursor-pointer"
+                                title={`Upload and verify ${doc}`}
+                              >
+                                <Upload className="w-3 h-3" /> Upload & Verify
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })}
@@ -665,6 +734,56 @@ export default function DocumentsPage() {
                   </div>
                 </div>
 
+                {/* Verification Mode Choice: Upload or Live Front Camera */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!/photo|photograph|passport/i.test(targetDocType)) {
+                        const photoDoc = scheme.requiredDocuments.find(d => /photo|photograph|passport/i.test(d)) || "Passport-size photographs";
+                        setTargetDocType(photoDoc);
+                      }
+                      setIsCameraOpen(true);
+                    }}
+                    className="p-3.5 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50/90 via-white to-purple-50/70 hover:border-indigo-400 hover:shadow-md transition-all text-left group cursor-pointer flex items-start gap-3"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Camera className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-slate-900">
+                          Use Front Camera
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 text-[9px] font-bold uppercase">
+                          Live Selfie
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                        Capture passport-size photo directly using your front camera.
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50/80 transition-all text-left group cursor-pointer flex items-start gap-3"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-bold text-slate-900 block">
+                        Upload Document / Photo
+                      </span>
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                        Upload existing JPG, PNG, or PDF file (up to 1MB).
+                      </p>
+                    </div>
+                  </button>
+                </div>
+
                 {/* Upload Dropzone */}
                 <div
                   onClick={() => fileInputRef.current?.click()}
@@ -688,13 +807,25 @@ export default function DocumentsPage() {
                     <Upload className="w-6 h-6 text-indigo-600" />
                   </div>
                   <p className="text-xs font-bold text-slate-800 mb-1">
-                    Click to Browse or Drag & Drop Document Image
+                    Click to Browse or Drag & Drop Document / Photo
                   </p>
                   <p className="text-[11px] text-slate-500">
                     Accepts JPG, PNG, WEBP, or PDF scans (max 1MB)
                   </p>
-                  <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-indigo-600 text-xs font-semibold shadow-xs">
-                    <Camera className="w-3.5 h-3.5" /> Select Official Document File
+                  <div className="mt-3 inline-flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-indigo-600 text-xs font-semibold shadow-xs">
+                      <Upload className="w-3.5 h-3.5" /> Select File from Device
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsCameraOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold shadow-xs transition-colors"
+                    >
+                      <Camera className="w-3.5 h-3.5" /> Open Front Camera
+                    </button>
                   </div>
                 </div>
 
@@ -732,22 +863,22 @@ export default function DocumentsPage() {
                   {/* Status Banner */}
                   <div
                     className={`rounded-2xl p-5 border shadow-xs ${
-                      report.authenticityStatus === "AUTHENTIC"
+                      isReportAuthentic
                         ? "bg-emerald-50/90 border-emerald-200"
+                        : isReportMismatch || report.authenticityStatus === "BLATANT_FAKE"
+                        ? "bg-red-50/90 border-red-200"
                         : report.authenticityStatus === "NOT_A_DOCUMENT"
                         ? "bg-slate-100 border-slate-300"
-                        : report.authenticityStatus === "BLATANT_FAKE"
-                        ? "bg-red-50/90 border-red-200"
                         : "bg-amber-50/90 border-amber-200"
                     }`}
                   >
                     <div className="flex items-start gap-3.5">
-                      {report.authenticityStatus === "AUTHENTIC" ? (
+                      {isReportAuthentic ? (
                         <CheckCircle2 className="w-7 h-7 text-emerald-600 flex-shrink-0 mt-0.5" />
+                      ) : isReportMismatch || report.authenticityStatus === "BLATANT_FAKE" ? (
+                        <AlertOctagon className="w-7 h-7 text-red-600 flex-shrink-0 mt-0.5" />
                       ) : report.authenticityStatus === "NOT_A_DOCUMENT" ? (
                         <XCircle className="w-7 h-7 text-slate-600 flex-shrink-0 mt-0.5" />
-                      ) : report.authenticityStatus === "BLATANT_FAKE" ? (
-                        <AlertOctagon className="w-7 h-7 text-red-600 flex-shrink-0 mt-0.5" />
                       ) : (
                         <AlertTriangle className="w-7 h-7 text-amber-600 flex-shrink-0 mt-0.5" />
                       )}
@@ -756,17 +887,19 @@ export default function DocumentsPage() {
                         <div className="flex items-center justify-between mb-1">
                           <span
                             className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                              report.authenticityStatus === "AUTHENTIC"
+                              isReportAuthentic
                                 ? "bg-emerald-600 text-white"
+                                : isReportMismatch || report.authenticityStatus === "BLATANT_FAKE"
+                                ? "bg-red-600 text-white"
                                 : report.authenticityStatus === "NOT_A_DOCUMENT"
                                 ? "bg-slate-700 text-white"
-                                : report.authenticityStatus === "BLATANT_FAKE"
-                                ? "bg-red-600 text-white"
                                 : "bg-amber-600 text-white"
                             }`}
                           >
-                            {report.authenticityStatus === "AUTHENTIC"
+                            {isReportAuthentic
                               ? "✓ Authentic & Verified"
+                              : isReportMismatch
+                              ? "🚨 Identity Mismatch — Document Rejected"
                               : report.authenticityStatus === "NOT_A_DOCUMENT"
                               ? "❌ Not a Government Document"
                               : report.authenticityStatus === "BLATANT_FAKE"
@@ -774,16 +907,16 @@ export default function DocumentsPage() {
                               : "⚠️ Discrepancy / Tampering Risk"}
                           </span>
                           <span className="text-xs font-extrabold text-slate-700">
-                            Authenticity Score: {report.authenticityScore}%
+                            Authenticity Score: {isReportMismatch ? 0 : report.authenticityScore}%
                           </span>
                         </div>
 
-                        <h4 className="text-sm font-bold text-slate-900 mt-2 mb-1">
-                          {report.documentTypeDetected}
-                        </h4>
-                        <p className="text-xs text-slate-700 leading-relaxed mb-3">
-                          {report.forensicSummary}
-                        </p>
+                            <h4 className="text-sm font-bold text-slate-900 mt-2 mb-1">
+                              {report.documentTypeDetected}
+                            </h4>
+                            <p className="text-xs text-slate-700 leading-relaxed mb-3">
+                              {report.forensicSummary}
+                            </p>
 
                         {/* Tamper / Forensic Red Flags */}
                         {report.tamperSignals && report.tamperSignals.length > 0 && (
@@ -855,6 +988,89 @@ export default function DocumentsPage() {
                                 </span>
                               </div>
                             )}
+                          </div>
+                        </div>
+
+                        {/* Biometric & Certificate Template Audits */}
+                        <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {/* Biometric Verification Audit Card */}
+                          <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2">
+                            <div className="flex items-center justify-between font-bold text-slate-800">
+                              <span className="flex items-center gap-1.5 text-xs text-indigo-950">
+                                <UserCheck className="w-4 h-4 text-indigo-600" />
+                                Biometric Photo & Face Audit
+                              </span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded font-extrabold ${
+                                report.biometricAudit?.faceTamperStatus === "PASS"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : report.biometricAudit?.faceTamperStatus === "MISSING_PHOTO"
+                                  ? "bg-slate-200 text-slate-700"
+                                  : "bg-red-100 text-red-800"
+                              }`}>
+                                {report.biometricAudit?.faceTamperStatus === "PASS"
+                                  ? "✓ BIOMETRIC PASS"
+                                  : report.biometricAudit?.faceTamperStatus === "MISSING_PHOTO"
+                                  ? "NO PHOTO DETECTED"
+                                  : "🚨 BIOMETRIC ALERT"}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 leading-snug">
+                              {report.biometricAudit?.biometricSummary || "Biometric facial photo scan complete."}
+                            </p>
+                            <div className="pt-2 border-t border-slate-200/60 grid grid-cols-2 gap-1.5 text-[10px]">
+                              <div>
+                                <span className="text-slate-400 block">Photo Presence:</span>
+                                <span className="font-semibold text-slate-800">
+                                  {report.biometricAudit?.photoDetected ? "✓ Face Photo Found" : "Not Found"}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 block">Hologram Edge Overlap:</span>
+                                <span className="font-semibold text-slate-800">
+                                  {report.biometricAudit?.hologramOverlapVerified ? "✓ Verified Seal" : "Unverified"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Official Certificate Template Audit Card */}
+                          <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2">
+                            <div className="flex items-center justify-between font-bold text-slate-800">
+                              <span className="flex items-center gap-1.5 text-xs text-indigo-950">
+                                <FileBadge className="w-4 h-4 text-indigo-600" />
+                                Certificate Template Audit
+                              </span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded font-extrabold ${
+                                report.templateAudit?.templateCompliance === "FULL_MATCH"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : report.templateAudit?.templateCompliance === "PARTIAL_DEVIATION"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}>
+                                {report.templateAudit?.templateCompliance === "FULL_MATCH"
+                                  ? "✓ TEMPLATE MATCHED"
+                                  : report.templateAudit?.templateCompliance === "PARTIAL_DEVIATION"
+                                  ? "PARTIAL DEVIATION"
+                                  : "NON-STANDARD LAYOUT"}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 leading-snug">
+                              {report.templateAudit?.templateSummary || "Official certificate template format verified."}
+                            </p>
+                            <div className="pt-2 border-t border-slate-200/60 grid grid-cols-2 gap-1.5 text-[10px]">
+                              <div>
+                                <span className="text-slate-400 block">Official Layout Format:</span>
+                                <span className="font-semibold text-slate-800 truncate block" title={report.templateAudit?.templateNameMatched}>
+                                  {report.templateAudit?.templateNameMatched || "Standard Format"}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 block">Stamp / Digital Signature:</span>
+                                <span className="font-semibold text-slate-800">
+                                  {report.templateAudit?.stampAndSignatureVerified ? "✓ Seal/Sign Valid" : "Unverified"}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -943,6 +1159,16 @@ export default function DocumentsPage() {
           </div>
         </div>
       </div>
+
+      {/* Front Camera Live Capture Modal */}
+      <CameraCaptureModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={handleCameraCapture}
+        expectedDocType={targetDocType}
+        title="Passport-Size Photo Front Camera"
+        subtitle="Position your face inside the passport frame with neutral expression & good lighting."
+      />
     </div>
   );
 }

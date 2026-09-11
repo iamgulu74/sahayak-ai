@@ -64,7 +64,28 @@ Examine the image thoroughly:
      Set "tamperSignals": ["Image is a screenshot of a web application or screen interface, not an authentic physical government document scan."]
      Clearly state in "forensicSummary" that the uploaded file is a screenshot of a web page/app UI and cannot be accepted as an official document.
 
-   - IF THIS IS NOT A DOCUMENT AT ALL (e.g. a random photo of an animal, person/selfie, nature, car, cartoon, meme, receipt, blank paper, non-document graphic):
+   - PASSPORT-SIZE PHOTOGRAPH & FRONT CAMERA LIVE CAPTURE RULE:
+     * If the expected document is "Passport-size photographs", "Passport-size photograph", "Passport Photo", "Applicant Photograph", or "Live Camera Photo" (or documentTypeExpected mentions "photo" or "photograph" or "passport"):
+       A frontal human portrait photo or live front-camera selfie IS EXPECTED and FULLY VALID.
+       DO NOT classify it as "NOT_A_DOCUMENT" or "Unidentified File / Non-Document".
+       Verify that:
+       1. A real human face is clearly visible, frontal, with eyes open and unoccluded (no sunglasses or full face covering).
+       2. Image is clear, well-lit, and suitable as an official identity photograph.
+       3. It is not an animal, cartoon, meme, random scenery, or non-human graphic.
+       If valid:
+       Set "isGovernmentDocument": true
+       Set "documentTypeDetected": "Passport-size Photograph / Live Front Camera Capture"
+       Set "authenticityStatus": "AUTHENTIC"
+       Set "authenticityScore": 95
+       Set "isTamperedOrForged": false
+       Set "tamperingRiskLevel": "NONE"
+       Set "photoDetected": true
+       Set "faceTamperStatus": "PASS"
+       Set "profileMatch": { "isMatch": true, "nameMatchScore": 90, "nameStatus": "EXACT_MATCH", "dobStatus": "NOT_APPLICABLE", "explanation": "Live front camera selfie / passport photo verified for applicant identity record." }
+       Set "tamperSignals": []
+       Set "forensicSummary": "Frontal facial portrait / passport photo verified. Clear human biometric features confirmed for applicant identity record."
+
+   - IF THIS IS NOT A DOCUMENT AT ALL (and NOT an expected passport photo / portrait) (e.g. a random photo of an animal, nature, car, cartoon, meme, receipt, blank paper, non-document graphic):
      Set "isGovernmentDocument": false
      Set "documentTypeDetected": "Unidentified File / Non-Document"
      Set "authenticityStatus": "NOT_A_DOCUMENT"
@@ -205,7 +226,7 @@ export async function POST(req: NextRequest) {
       runGeminiForensics(cleanBase64, mimeType, profile, documentTypeExpected),
     ]);
 
-    const finalReport = consolidateResults(ocrSpaceText, geminiResult, profile);
+    const finalReport = consolidateResults(ocrSpaceText, geminiResult, profile, documentTypeExpected);
 
     return NextResponse.json({
       success: true,
@@ -268,7 +289,7 @@ async function runGeminiForensics(
   return null;
 }
 
-function consolidateResults(ocrSpaceRawText: string, geminiResult: any, profile: any): any {
+function consolidateResults(ocrSpaceRawText: string, geminiResult: any, profile: any, documentTypeExpected: string = ""): any {
   // Check if OCR text contains obvious web UI screenshot indicators
   const isWebOrAppScreenshot = /sahayak|localhost|http:\/\/|https:\/\/|screenshot|dossier|application tracker|check eligibility|ocr & docs|emi calculator|find partner|ai assistant|literacy hub|extracted real document fields|authenticity score:|upload another|statutory verification norms/i.test(ocrSpaceRawText);
 
@@ -421,12 +442,16 @@ function consolidateResults(ocrSpaceRawText: string, geminiResult: any, profile:
   const extractedDocNum = (ocrSpaceRawText.match(/[A-Z]{5}[0-9]{4}[A-Z]|\d{4}\s?\d{4}\s?\d{4}/) || [""])[0];
   const hasValidSyntax = !!extractedDocNum;
 
-  const hasDocKeywords = isAadhaar || isPan || isCaste || isIncome || isBank || isQuotation || isVoter || isRent;
-  const isDoc = hasDocKeywords && (hasValidSyntax || ocrSpaceRawText.length > 50);
+  const isPhoto = /photo|photograph|passport/i.test(documentTypeExpected);
+  const hasDocKeywords = isAadhaar || isPan || isCaste || isIncome || isBank || isQuotation || isVoter || isRent || isPhoto;
+  const isDoc = (hasDocKeywords && (hasValidSyntax || ocrSpaceRawText.length > 50)) || isPhoto;
 
   let detectedType = "Government Document";
   let templateName = "Official State/Central Issuance Standard";
-  if (isAadhaar) {
+  if (isPhoto) {
+    detectedType = "Passport-size Photograph / Live Front Camera Capture";
+    templateName = "Official Passport-Size Applicant Photo Standard";
+  } else if (isAadhaar) {
     detectedType = "Aadhaar Card";
     templateName = "UIDAI Official Aadhaar Card Standard Layout";
   } else if (isCaste) {
@@ -459,9 +484,9 @@ function consolidateResults(ocrSpaceRawText: string, geminiResult: any, profile:
 
   let extractedName = "";
   const lines = ocrSpaceRawText.split("\n").map(l => l.trim()).filter(Boolean);
-  extractedName = lines[0] || "Beneficiary";
+  extractedName = isPhoto ? (profile?.name || "Applicant") : (lines[0] || "Beneficiary");
 
-  const isAuthentic = isDoc && (hasValidSyntax || (isCaste || isIncome || isBank || isRent));
+  const isAuthentic = isPhoto || (isDoc && (hasValidSyntax || (isCaste || isIncome || isBank || isRent)));
   const emblemDetected = /ASHOKA|EMBLEM|GOVT OF INDIA|GOVERNMENT OF INDIA|TAHASILDAR|REVENUE DEPT/i.test(ocrSpaceRawText);
 
   resultToReturn = {

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { SCHEMES, getSchemeById } from "@/lib/schemes-data";
 import { useAuth } from "@/contexts/AuthContext";
+import CameraCaptureModal from "@/components/CameraCaptureModal";
 
 interface VerificationReport {
   isGovernmentDocument: boolean;
@@ -222,8 +223,18 @@ export default function DocumentsPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [report, setReport] = useState<VerificationReport | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCameraCapture = (file: File, dataUrl: string) => {
+    setErrorMsg(null);
+    setReport(null);
+    setJustVerifiedDoc(null);
+    setSelectedFile(file);
+    setPreviewUrl(dataUrl);
+    runVerification(dataUrl, "image/jpeg", file.name);
+  };
 
   // Load saved checklist ticks from localStorage on scheme change
   useEffect(() => {
@@ -545,33 +556,68 @@ export default function DocumentsPage() {
                           </div>
                         </div>
 
-                        {isChecked ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setTargetDocType(doc);
-                              fileInputRef.current?.click();
-                            }}
-                            className="flex-shrink-0 text-[10px] font-semibold text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer"
-                            title={`Re-upload and verify ${doc}`}
-                          >
-                            Re-scan
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setTargetDocType(doc);
-                              fileInputRef.current?.click();
-                            }}
-                            className="flex-shrink-0 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-100 transition-colors inline-flex items-center gap-1 cursor-pointer"
-                            title={`Upload and verify ${doc}`}
-                          >
-                            <Upload className="w-3 h-3" /> Upload & Verify
-                          </button>
-                        )}
+                        {(() => {
+                          const isPhotoDoc = /photo|photograph|passport/i.test(doc);
+                          return isChecked ? (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                              {isPhotoDoc && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setTargetDocType(doc);
+                                    setIsCameraOpen(true);
+                                  }}
+                                  className="flex-shrink-0 text-[10px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-lg border border-indigo-200 transition-colors cursor-pointer flex items-center gap-1"
+                                  title={`Capture photo via front camera`}
+                                >
+                                  <Camera className="w-3 h-3" /> Camera
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setTargetDocType(doc);
+                                  fileInputRef.current?.click();
+                                }}
+                                className="flex-shrink-0 text-[10px] font-semibold text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                                title={`Re-upload and verify ${doc}`}
+                              >
+                                Re-scan
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                              {isPhotoDoc && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setTargetDocType(doc);
+                                    setIsCameraOpen(true);
+                                  }}
+                                  className="flex-shrink-0 text-[11px] font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 px-2.5 py-1 rounded-lg shadow-xs transition-all inline-flex items-center gap-1 cursor-pointer"
+                                  title={`Take passport-size photo using front camera`}
+                                >
+                                  <Camera className="w-3 h-3" /> Front Camera
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setTargetDocType(doc);
+                                  fileInputRef.current?.click();
+                                }}
+                                className="flex-shrink-0 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-100 transition-colors inline-flex items-center gap-1 cursor-pointer"
+                                title={`Upload and verify ${doc}`}
+                              >
+                                <Upload className="w-3 h-3" /> Upload & Verify
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })}
@@ -688,6 +734,56 @@ export default function DocumentsPage() {
                   </div>
                 </div>
 
+                {/* Verification Mode Choice: Upload or Live Front Camera */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!/photo|photograph|passport/i.test(targetDocType)) {
+                        const photoDoc = scheme.requiredDocuments.find(d => /photo|photograph|passport/i.test(d)) || "Passport-size photographs";
+                        setTargetDocType(photoDoc);
+                      }
+                      setIsCameraOpen(true);
+                    }}
+                    className="p-3.5 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50/90 via-white to-purple-50/70 hover:border-indigo-400 hover:shadow-md transition-all text-left group cursor-pointer flex items-start gap-3"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Camera className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-slate-900">
+                          Use Front Camera
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 text-[9px] font-bold uppercase">
+                          Live Selfie
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                        Capture passport-size photo directly using your front camera.
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50/80 transition-all text-left group cursor-pointer flex items-start gap-3"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-bold text-slate-900 block">
+                        Upload Document / Photo
+                      </span>
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                        Upload existing JPG, PNG, or PDF file (up to 1MB).
+                      </p>
+                    </div>
+                  </button>
+                </div>
+
                 {/* Upload Dropzone */}
                 <div
                   onClick={() => fileInputRef.current?.click()}
@@ -711,13 +807,25 @@ export default function DocumentsPage() {
                     <Upload className="w-6 h-6 text-indigo-600" />
                   </div>
                   <p className="text-xs font-bold text-slate-800 mb-1">
-                    Click to Browse or Drag & Drop Document Image
+                    Click to Browse or Drag & Drop Document / Photo
                   </p>
                   <p className="text-[11px] text-slate-500">
                     Accepts JPG, PNG, WEBP, or PDF scans (max 1MB)
                   </p>
-                  <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-indigo-600 text-xs font-semibold shadow-xs">
-                    <Camera className="w-3.5 h-3.5" /> Select Official Document File
+                  <div className="mt-3 inline-flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-indigo-600 text-xs font-semibold shadow-xs">
+                      <Upload className="w-3.5 h-3.5" /> Select File from Device
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsCameraOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold shadow-xs transition-colors"
+                    >
+                      <Camera className="w-3.5 h-3.5" /> Open Front Camera
+                    </button>
                   </div>
                 </div>
 
@@ -1051,6 +1159,16 @@ export default function DocumentsPage() {
           </div>
         </div>
       </div>
+
+      {/* Front Camera Live Capture Modal */}
+      <CameraCaptureModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={handleCameraCapture}
+        expectedDocType={targetDocType}
+        title="Passport-Size Photo Front Camera"
+        subtitle="Position your face inside the passport frame with neutral expression & good lighting."
+      />
     </div>
   );
 }

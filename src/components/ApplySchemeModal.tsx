@@ -29,10 +29,12 @@ import {
   FileCheck,
   CheckCircle,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Camera
 } from "lucide-react";
 import { Scheme } from "@/lib/schemes-data";
 import { useAuth } from "@/contexts/AuthContext";
+import CameraCaptureModal from "@/components/CameraCaptureModal";
 import {
   SubmittedApplication,
   saveApplication,
@@ -73,6 +75,8 @@ export default function ApplySchemeModal({
   const [verifyingDoc, setVerifyingDoc] = useState<string | null>(null);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [verificationSuccess, setVerificationSuccess] = useState<string | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraDocName, setCameraDocName] = useState<string>("Passport-size photographs");
 
   // Auth gate state for unauthenticated users
   const [authMode, setAuthMode] = useState<"options" | "email">("options");
@@ -850,43 +854,73 @@ export default function ApplySchemeModal({
                       </div>
 
                       <div className="flex-shrink-0">
-                        {isVerified ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-[11px] flex items-center gap-1">
-                              <Check className="w-3 h-3" /> Verified
+                        {(() => {
+                          const isPhotoDoc = /photo|photograph|passport/i.test(docName);
+                          return isVerified ? (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                              <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-[11px] flex items-center gap-1">
+                                <Check className="w-3 h-3" /> Verified
+                              </span>
+                              {isPhotoDoc && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCameraDocName(docName);
+                                    setIsCameraOpen(true);
+                                  }}
+                                  className="text-[10px] text-indigo-600 hover:text-indigo-800 underline ml-1 cursor-pointer flex items-center gap-0.5"
+                                >
+                                  <Camera className="w-2.5 h-2.5" /> Retake Selfie
+                                </button>
+                              )}
+                              <label className="cursor-pointer text-[10px] text-slate-400 hover:text-indigo-600 underline ml-1">
+                                Re-upload
+                                <input
+                                  type="file"
+                                  accept="image/*,.pdf"
+                                  className="hidden"
+                                  disabled={isVerifying}
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handleUploadAndVerify(docName, f);
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          ) : isVerifying ? (
+                            <span className="px-3 py-1.5 rounded-xl bg-indigo-100 text-indigo-700 font-semibold text-xs flex items-center gap-1.5">
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Auditing...
                             </span>
-                            <label className="cursor-pointer text-[10px] text-slate-400 hover:text-indigo-600 underline ml-1">
-                              Re-verify
-                              <input
-                                type="file"
-                                accept="image/*,.pdf"
-                                className="hidden"
-                                disabled={isVerifying}
-                                onChange={(e) => {
-                                  const f = e.target.files?.[0];
-                                  if (f) handleUploadAndVerify(docName, f);
-                                }}
-                              />
-                            </label>
-                          </div>
-                        ) : isVerifying ? (
-                          <span className="px-3 py-1.5 rounded-xl bg-indigo-100 text-indigo-700 font-semibold text-xs flex items-center gap-1.5">
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Auditing...
-                          </span>
-                        ) : (
-                          <label className="cursor-pointer px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors">
-                            <Upload className="w-3.5 h-3.5" /> Upload & Verify
-                            <input
-                              type="file"
-                              accept="image/*,.pdf"
-                              className="hidden"
-                              onChange={(e) => {
-                                const f = e.target.files?.[0];
-                                if (f) handleUploadAndVerify(docName, f);
-                              }}
-                            />
-                          </label>
-                        )}
+                          ) : (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                              {isPhotoDoc && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCameraDocName(docName);
+                                    setIsCameraOpen(true);
+                                  }}
+                                  className="cursor-pointer px-2.5 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center gap-1 shadow-2xs transition-colors"
+                                  title="Take photo with front camera"
+                                >
+                                  <Camera className="w-3.5 h-3.5" /> Front Camera
+                                </button>
+                              )}
+                              <label className="cursor-pointer px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors">
+                                <Upload className="w-3.5 h-3.5" /> Upload & Verify
+                                <input
+                                  type="file"
+                                  accept="image/*,.pdf"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handleUploadAndVerify(docName, f);
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   );
@@ -1059,6 +1093,20 @@ export default function ApplySchemeModal({
           )}
         </div>
       </motion.div>
+
+      {/* Front Camera Live Capture Modal */}
+      <CameraCaptureModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={(file) => {
+          if (cameraDocName) {
+            handleUploadAndVerify(cameraDocName, file);
+          }
+        }}
+        expectedDocType={cameraDocName}
+        title="Passport-Size Photo Front Camera"
+        subtitle="Capture live passport-size photo to complete your scheme document verification."
+      />
     </div>
   );
 }
