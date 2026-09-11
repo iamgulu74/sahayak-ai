@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   ArrowLeft,
@@ -15,7 +15,14 @@ import {
   Mic,
   MicOff,
   Zap,
-  ShieldCheck
+  ShieldCheck,
+  RotateCcw,
+  Check,
+  Loader2,
+  X,
+  AlertTriangle,
+  CheckCircle2,
+  FileText
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserProfile } from "@/lib/matching-engine";
@@ -48,15 +55,20 @@ const BUSINESS_TYPES = [
 ];
 
 export default function QuestionnairePage() {
-  const { updateProfile, userProfile } = useAuth();
+  const { user, updateProfile, resetProfile, userProfile } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
 
+  // Reset Profile State
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetToast, setResetToast] = useState<string | null>(null);
+
   const [form, setForm] = useState<Partial<UserProfile>>({
-    name: userProfile?.name || "",
+    name: userProfile?.name || user?.displayName || "",
     age: userProfile?.age || undefined,
     state: userProfile?.state || "Odisha",
     district: userProfile?.district || "",
@@ -72,11 +84,37 @@ export default function QuestionnairePage() {
     purpose: userProfile?.purpose || "business_start",
     aadhaarMasked: userProfile?.aadhaarMasked || "",
     panMasked: userProfile?.panMasked || "",
-    phone: userProfile?.phone || "",
+    aadhaarVerified: userProfile?.aadhaarVerified || false,
+    panVerified: userProfile?.panVerified || false,
+    phone: userProfile?.phone || (user as any)?.phoneNumber || "",
     isStreetVendor: false,
     isWoman: false,
     isFarmer: false,
   });
+
+  // Sync profile when auth or stored data arrives
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("sahayak_profile") || localStorage.getItem("sahayak_profile");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && (parsed.projectCostLakh || parsed.district || parsed.age)) {
+          setForm((prev) => ({ ...prev, ...parsed }));
+          return;
+        }
+      }
+    } catch {}
+
+    if (userProfile?.projectCostLakh || userProfile?.district) {
+      setForm((prev) => ({
+        ...prev,
+        ...userProfile,
+        name: userProfile.name || prev.name,
+      }));
+    } else if (userProfile?.name && !form.name) {
+      setForm((prev) => ({ ...prev, name: userProfile.name }));
+    }
+  }, [userProfile]);
 
   // Speech Recognition setup for Business Description
   useEffect(() => {
@@ -124,6 +162,71 @@ export default function QuestionnairePage() {
   const update = (key: string, value: any) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  // Aadhaar manual typing formatter (groups of 4)
+  const handleAadhaarChange = (raw: string) => {
+    const cleanedDigits = raw.replace(/\D/g, "").slice(0, 12);
+    if (cleanedDigits.length > 0 && !raw.includes("X")) {
+      const formatted = cleanedDigits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+      update("aadhaarMasked", formatted);
+      update("aadhaarNumber", formatted);
+    } else {
+      update("aadhaarMasked", raw.slice(0, 16));
+      update("aadhaarNumber", raw.slice(0, 16));
+    }
+  };
+
+  // PAN manual typing formatter (auto uppercase, max 10 chars)
+  const handlePanChange = (raw: string) => {
+    const upper = raw.toUpperCase().slice(0, 10);
+    update("panMasked", upper);
+    update("panNumber", upper);
+  };
+
+  // Reset Profile Action
+  const handleResetProfile = async () => {
+    setIsResetting(true);
+    try {
+      await resetProfile();
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("sahayak_profile");
+        localStorage.removeItem("sahayak_profile");
+        localStorage.removeItem("sahayak_all_verified_docs");
+      }
+      setForm({
+        name: user?.displayName || (userProfile as any)?.name || "",
+        age: undefined,
+        state: "Odisha",
+        district: "",
+        category: "SC",
+        gender: "male",
+        annualIncomeLakh: undefined,
+        educationLevel: "secondary",
+        businessStatus: "starting",
+        businessType: "",
+        businessDescription: "",
+        projectCostLakh: undefined,
+        loanRequiredLakh: undefined,
+        purpose: "business_start",
+        aadhaarMasked: "",
+        panMasked: "",
+        aadhaarVerified: false,
+        panVerified: false,
+        phone: (user as any)?.phoneNumber || (userProfile as any)?.phone || "",
+        isStreetVendor: false,
+        isWoman: false,
+        isFarmer: false,
+      });
+      setStep(1);
+      setShowResetModal(false);
+      setResetToast("Profile questionnaire answers have been reset to a clean state.");
+      setTimeout(() => setResetToast(null), 3500);
+    } catch (err) {
+      console.error("Reset failed:", err);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const handleNext = async () => {
     if (step < 3) {
       setStep(step + 1);
@@ -141,9 +244,20 @@ export default function QuestionnairePage() {
     try {
       await updateProfile(full);
     } catch {}
-    sessionStorage.setItem("sahayak_profile", JSON.stringify(full));
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("sahayak_profile", JSON.stringify(full));
+      localStorage.setItem("sahayak_profile", JSON.stringify(full));
+    }
     router.push("/matching");
   };
+
+  // Format validity checks
+  const cleanAadhaar = (form.aadhaarMasked || "").replace(/\s+/g, "");
+  const isAadhaarValid =
+    /^\d{12}$/.test(cleanAadhaar) ||
+    /^XXXX-XXXX-\d{4}$/i.test(cleanAadhaar) ||
+    /^XXXX\sXXXX\s\d{4}$/i.test(cleanAadhaar);
+  const isPanValid = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.panMasked || "");
 
   return (
     <div className="page-container py-12 px-4 sm:px-6">
@@ -187,16 +301,35 @@ export default function QuestionnairePage() {
           })}
         </div>
 
+        {/* Toast Notification */}
+        {resetToast && (
+          <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <span>{resetToast}</span>
+          </div>
+        )}
+
         {/* Form Card */}
         <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
-          <div className="mb-6">
-            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
-              Step {step} of 3
-            </span>
-            <h2 className="text-xl font-bold text-slate-900 mt-0.5">
-              {STEPS[step - 1].title}
-            </h2>
-            <p className="text-xs text-slate-500">{STEPS[step - 1].desc}</p>
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                Step {step} of 3
+              </span>
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
+                {STEPS[step - 1].title}
+              </h2>
+              <p className="text-xs text-slate-500">{STEPS[step - 1].desc}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowResetModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 font-semibold text-xs transition-colors cursor-pointer flex-shrink-0"
+              title="Reset questionnaire answers to start fresh"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset Profile
+            </button>
           </div>
 
           {/* Step 1: Profile & Identity */}
@@ -208,9 +341,9 @@ export default function QuestionnairePage() {
                 </label>
                 <input
                   type="text"
-                  value={form.name}
+                  value={form.name || ""}
                   onChange={(e) => update("name", e.target.value)}
-                  placeholder="e.g. Ravi Kumar"
+                  placeholder="e.g. Jasaswi Das"
                   className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
@@ -222,15 +355,16 @@ export default function QuestionnairePage() {
                     type="number"
                     min={17}
                     max={70}
-                    value={form.age}
-                    onChange={(e) => update("age", Number(e.target.value))}
+                    value={form.age || ""}
+                    onChange={(e) => update("age", e.target.value ? Number(e.target.value) : undefined)}
+                    placeholder="e.g. 28"
                     className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
                   <select
-                    value={form.gender}
+                    value={form.gender || "male"}
                     onChange={(e) => update("gender", e.target.value)}
                     className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
@@ -247,7 +381,7 @@ export default function QuestionnairePage() {
                     State of Residence
                   </label>
                   <select
-                    value={form.state}
+                    value={form.state || "Odisha"}
                     onChange={(e) => update("state", e.target.value)}
                     className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
@@ -264,7 +398,7 @@ export default function QuestionnairePage() {
                   </label>
                   <input
                     type="text"
-                    value={form.district}
+                    value={form.district || ""}
                     onChange={(e) => update("district", e.target.value)}
                     placeholder="e.g. Sundargarh"
                     className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -278,7 +412,7 @@ export default function QuestionnairePage() {
                     Social Category
                   </label>
                   <select
-                    value={form.category}
+                    value={form.category || "SC"}
                     onChange={(e) => update("category", e.target.value)}
                     className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
@@ -294,7 +428,7 @@ export default function QuestionnairePage() {
                     Education Level
                   </label>
                   <select
-                    value={form.educationLevel}
+                    value={form.educationLevel || "secondary"}
                     onChange={(e) => update("educationLevel", e.target.value)}
                     className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
@@ -307,29 +441,102 @@ export default function QuestionnairePage() {
                 </div>
               </div>
 
-              {/* Masked IDs */}
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+              {/* Official Identity Details (Aadhaar & PAN Number Entry Only) */}
+              <div className="pt-4 border-t border-slate-100 space-y-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                    Aadhaar Reference (Masked)
-                  </label>
-                  <input
-                    type="text"
-                    value={form.aadhaarMasked || "XXXX-XXXX-8921"}
-                    onChange={(e) => update("aadhaarMasked", e.target.value)}
-                    className="w-full text-xs rounded-xl border border-slate-200 p-2 bg-slate-100 text-slate-600 cursor-not-allowed font-mono"
-                  />
+                  <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                    Official Identity Details (Aadhaar & PAN)
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Enter your official identity document numbers for verification and scheme matching.
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                    PAN Reference (Masked)
-                  </label>
-                  <input
-                    type="text"
-                    value={form.panMasked || "ABCDE1234F"}
-                    onChange={(e) => update("panMasked", e.target.value)}
-                    className="w-full text-xs rounded-xl border border-slate-200 p-2 bg-slate-100 text-slate-600 cursor-not-allowed font-mono"
-                  />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Aadhaar Number Field */}
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-slate-700">
+                        Aadhaar Number / Reference
+                      </label>
+                      {isAadhaarValid ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] flex items-center gap-1">
+                          <Check className="w-2.5 h-2.5" /> Valid 12-Digit UID
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-slate-400">12 digits</span>
+                      )}
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={form.aadhaarMasked || ""}
+                        onChange={(e) => handleAadhaarChange(e.target.value)}
+                        placeholder="Enter 12-digit UID (e.g. 5482 9102 3847)"
+                        maxLength={14}
+                        className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-white text-slate-800 font-mono focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      />
+                      {form.aadhaarMasked && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            update("aadhaarMasked", "");
+                            update("aadhaarNumber", "");
+                          }}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      Enter 12-digit UID as printed on your Aadhaar card
+                    </p>
+                  </div>
+
+                  {/* PAN Card Field */}
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-slate-700">
+                        PAN Card Number
+                      </label>
+                      {isPanValid ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] flex items-center gap-1">
+                          <Check className="w-2.5 h-2.5" /> Valid PAN
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-slate-400">10 characters</span>
+                      )}
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={form.panMasked || ""}
+                        onChange={(e) => handlePanChange(e.target.value)}
+                        placeholder="Enter 10-character PAN (e.g. ABCDE1234F)"
+                        maxLength={10}
+                        className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-white text-slate-800 font-mono uppercase focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      />
+                      {form.panMasked && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            update("panMasked", "");
+                            update("panNumber", "");
+                          }}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      Enter 10-character alphanumeric PAN (e.g. ABCDE1234F)
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -348,10 +555,10 @@ export default function QuestionnairePage() {
                       key={p.value}
                       type="button"
                       onClick={() => update("purpose", p.value)}
-                      className={`p-3 rounded-xl border text-xs font-semibold text-left transition-all ${
+                      className={`p-3 rounded-2xl border text-left text-xs transition-all cursor-pointer ${
                         form.purpose === p.value
-                          ? "bg-indigo-50 border-indigo-600 text-indigo-900 shadow-xs"
-                          : "bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300"
+                          ? "bg-indigo-50 border-indigo-400 text-indigo-900 font-bold ring-2 ring-indigo-200"
+                          : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                       }`}
                     >
                       {p.label}
@@ -362,16 +569,17 @@ export default function QuestionnairePage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Business / Trade Type
+                  Business / Trade Category
                 </label>
                 <select
-                  value={form.businessType}
+                  value={form.businessType || ""}
                   onChange={(e) => update("businessType", e.target.value)}
                   className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
-                  {BUSINESS_TYPES.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
+                  <option value="">-- Select Industry / Trade --</option>
+                  {BUSINESS_TYPES.map((bt) => (
+                    <option key={bt} value={bt}>
+                      {bt}
                     </option>
                   ))}
                 </select>
@@ -380,44 +588,28 @@ export default function QuestionnairePage() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-semibold text-slate-700">
-                    Describe your business idea & machinery needs
+                    Brief Business Description or Equipment Details
                   </label>
                   <button
                     type="button"
                     onClick={toggleListening}
-                    className={`text-[11px] px-2.5 py-1 rounded-lg border flex items-center gap-1 transition-all ${
+                    className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
                       isListening
-                        ? "bg-red-500 text-white border-red-600 animate-pulse"
-                        : "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100"
+                        ? "bg-rose-50 text-rose-700 border-rose-300 animate-pulse font-bold"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-300"
                     }`}
                   >
-                    {isListening ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
-                    <span>{isListening ? "Listening..." : "Speak Description"}</span>
+                    {isListening ? <MicOff className="w-3 h-3 text-rose-600" /> : <Mic className="w-3 h-3 text-slate-500" />}
+                    {isListening ? "Listening..." : "Speak Description"}
                   </button>
                 </div>
                 <textarea
                   rows={3}
-                  value={form.businessDescription}
+                  value={form.businessDescription || ""}
                   onChange={(e) => update("businessDescription", e.target.value)}
-                  placeholder="e.g. I want to buy 2 high-speed industrial sewing machines and fabric to start a tailoring business..."
-                  className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Current Business Status
-                </label>
-                <select
-                  value={form.businessStatus}
-                  onChange={(e) => update("businessStatus", e.target.value)}
+                  placeholder="e.g. Purchase of commercial sewing machine and electric cutting tool for local garment tailoring shop."
                   className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                >
-                  <option value="starting">Starting Soon (First-time entrepreneur)</option>
-                  <option value="existing">Existing Micro Unit (Expanding)</option>
-                  <option value="none">Idea Stage</option>
-                  <option value="student">Skill Trainee / Vocational</option>
-                </select>
+                />
               </div>
             </div>
           )}
@@ -425,93 +617,59 @@ export default function QuestionnairePage() {
           {/* Step 3: Financial Scale */}
           {step === 3 && (
             <div className="space-y-4">
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-xs font-semibold text-slate-700">
-                    Annual Family Income (₹ in Lakh)
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Annual Household Income (₹ Lakh)
                   </label>
-                  <span className="text-xs font-bold text-indigo-600">
-                    ₹{form.annualIncomeLakh} Lakh/year
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="50"
+                    value={form.annualIncomeLakh || ""}
+                    onChange={(e) => update("annualIncomeLakh", e.target.value ? Number(e.target.value) : undefined)}
+                    placeholder="e.g. 2.4"
+                    className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    NSFDC eligibility ceiling: Under ₹5.00 Lakh
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min={0.5}
-                  max={8.0}
-                  step={0.1}
-                  value={form.annualIncomeLakh}
-                  onChange={(e) => update("annualIncomeLakh", Number(e.target.value))}
-                  className="w-full accent-indigo-600 cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
-                  <span>₹0.5L</span>
-                  <span className="font-semibold text-emerald-600">
-                    Official NSFDC Ceiling: ₹5.00 Lakh
-                  </span>
-                  <span>₹8.0L</span>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Total Project / Machinery Cost (₹ Lakh)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    max="100"
+                    value={form.projectCostLakh || ""}
+                    onChange={(e) => update("projectCostLakh", e.target.value ? Number(e.target.value) : undefined)}
+                    placeholder="e.g. 2.0"
+                    className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  />
                 </div>
               </div>
 
               <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-xs font-semibold text-slate-700">
-                    Total Estimated Project Cost (₹ in Lakh)
-                  </label>
-                  <span className="text-xs font-bold text-indigo-600">
-                    ₹{form.projectCostLakh} Lakh
-                  </span>
-                </div>
-                <input
-                  type="number"
-                  min={0.2}
-                  max={50.0}
-                  step={0.1}
-                  value={form.projectCostLakh}
-                  onChange={(e) => {
-                    const cost = Number(e.target.value);
-                    update("projectCostLakh", cost);
-                    update("loanRequiredLakh", Math.round(cost * 0.9 * 10) / 10);
-                  }}
-                  className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
-                <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
-                  <span>Need an itemized breakdown?</span>
-                  <Link href="/project-cost" className="text-indigo-600 font-semibold hover:underline">
-                    Use Project Cost Calculator →
-                  </Link>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-xs font-semibold text-slate-700">
-                    Loan Amount Required (₹ in Lakh)
-                  </label>
-                  <span className="text-xs font-bold text-indigo-600">
-                    ₹{form.loanRequiredLakh} Lakh (90% Financing)
-                  </span>
-                </div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Loan Amount Requested (₹ Lakh)
+                </label>
                 <input
                   type="number"
-                  min={0.1}
-                  max={form.projectCostLakh || 10}
-                  step={0.1}
-                  value={form.loanRequiredLakh}
-                  onChange={(e) => update("loanRequiredLakh", Number(e.target.value))}
+                  step="0.1"
+                  min="0.1"
+                  max="50"
+                  value={form.loanRequiredLakh || ""}
+                  onChange={(e) => update("loanRequiredLakh", e.target.value ? Number(e.target.value) : undefined)}
+                  placeholder="e.g. 1.8"
                   className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Promoter Contribution (Your share): ₹
-                  {Math.max(0, (form.projectCostLakh || 3) - (form.loanRequiredLakh || 2.7)).toFixed(2)}{" "}
-                  Lakh (10%)
-                </p>
-              </div>
-
-              {/* Privacy consent */}
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-2 text-[11px] text-slate-600">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span>
-                  By proceeding, you consent to checking your profile against verified government scheme rules. Your data is never sold or shared with commercial lead aggregators.
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Typically up to 90% of total project cost
                 </span>
               </div>
             </div>
@@ -523,7 +681,7 @@ export default function QuestionnairePage() {
               <button
                 type="button"
                 onClick={() => setStep(step - 1)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" /> Back
               </button>
@@ -535,10 +693,13 @@ export default function QuestionnairePage() {
               type="button"
               onClick={handleNext}
               disabled={loading}
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
-                <span>Matching Engine Running...</span>
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Matching Engine Running...</span>
+                </>
               ) : step === 3 ? (
                 <>
                   <Sparkles className="w-3.5 h-3.5" /> Run AI Scheme Matching
@@ -552,6 +713,71 @@ export default function QuestionnairePage() {
           </div>
         </div>
       </div>
+
+      {/* Reset Confirmation Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowResetModal(false)}
+                className="p-1 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Reset Questionnaire Answers?</h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                This will clear all filled profile answers in this questionnaire (identity, demographics, business requirement, and loan parameters) and return you to Step 1. Your login session will remain active.
+              </p>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200/70 rounded-2xl p-3 text-[11px] text-amber-800 space-y-1">
+              <div className="font-semibold flex items-center gap-1.5">
+                <span>⚠️ Note:</span>
+              </div>
+              <p>
+                All fields will be wiped to blank so you can enter fresh or updated information.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                disabled={isResetting}
+                onClick={() => setShowResetModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 cursor-pointer transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isResetting}
+                onClick={handleResetProfile}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                {isResetting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Resetting...
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Yes, Reset Profile
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,6 +25,7 @@ interface AuthContextType {
   loginWithOtpSession: (data: { name: string; phone: string; email?: string }) => void;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  resetProfile: () => Promise<void>;
   language: "en" | "hi" | "or";
   setLanguage: (lang: "en" | "hi" | "or") => void;
 }
@@ -180,13 +181,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetProfile = async () => {
+    const defaultName = (user as any)?.displayName || (user as any)?.name || "";
+    const defaultPhone = (user as any)?.phoneNumber || (user as any)?.phone || "";
+    const cleanProfile: Partial<UserProfile> = {
+      name: defaultName,
+      phone: defaultPhone,
+      languagePreference: language || "en",
+    };
+    setUserProfile(cleanProfile);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("sahayak_profile");
+      localStorage.removeItem("sahayak_profile");
+    }
+    if (user && !('isOtpUser' in user && user.isOtpUser)) {
+      try {
+        await setDoc(doc(db, "users", user.uid), cleanProfile);
+      } catch (error) {
+        console.warn("Could not reset profile in Firestore:", error);
+      }
+    }
+  };
+
   const setLanguage = (lang: "en" | "hi" | "or") => {
     setLanguageState(lang);
     if (user) updateProfile({ languagePreference: lang });
   };
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, isAuthenticated: !!user, login, register, loginWithGoogle, loginWithOtpSession, logout, updateProfile, language, setLanguage }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, isAuthenticated: !!user, login, register, loginWithGoogle, loginWithOtpSession, logout, updateProfile, resetProfile, language, setLanguage }}>
       {children}
     </AuthContext.Provider>
   );

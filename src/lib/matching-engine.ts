@@ -21,6 +21,10 @@ export interface UserProfile {
   languagePreference: "en" | "hi" | "or";
   aadhaarMasked?: string;
   panMasked?: string;
+  aadhaarNumber?: string;
+  panNumber?: string;
+  aadhaarVerified?: boolean;
+  panVerified?: boolean;
   phone?: string;
   verified?: boolean;
 }
@@ -58,6 +62,9 @@ export function calculateEMI(principal: number, ratePercent: number, tenureMonth
 }
 
 export function matchSchemes(profile: UserProfile): SchemeMatch[] {
+  if (!profile || !profile.projectCostLakh || profile.projectCostLakh <= 0) {
+    return [];
+  }
   const results: SchemeMatch[] = [];
   const activeSchemes = SCHEMES.filter((s) => s.status === "active");
 
@@ -276,19 +283,19 @@ export function matchSchemes(profile: UserProfile): SchemeMatch[] {
 // Default baseline profile template without hardcoded demo data
 export const EMPTY_USER_PROFILE: UserProfile = {
   name: "",
-  age: 25,
+  age: 0,
   state: "Odisha",
   district: "",
   category: "SC",
   gender: "male",
-  annualIncomeLakh: 2.5,
+  annualIncomeLakh: 0,
   educationLevel: "secondary",
-  businessStatus: "starting",
-  businessType: "Petty Trade / Retail Shop",
+  businessStatus: "none",
+  businessType: "",
   businessDescription: "",
-  projectCostLakh: 2.0,
-  loanRequiredLakh: 1.8,
-  purpose: "business_start",
+  projectCostLakh: 0,
+  loanRequiredLakh: 0,
+  purpose: "",
   isStreetVendor: false,
   isWoman: false,
   isFarmer: false,

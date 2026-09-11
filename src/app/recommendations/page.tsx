@@ -145,20 +145,26 @@ export default function RecommendationsPage() {
   const [hasProfile, setHasProfile] = useState(false);
 
   useEffect(() => {
-    let profile: UserProfile = DEFAULT_DEMO_PROFILE;
+    let profile: UserProfile | null = null;
     try {
-      const stored = sessionStorage.getItem("sahayak_profile");
+      const stored = sessionStorage.getItem("sahayak_profile") || localStorage.getItem("sahayak_profile");
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.name) setHasProfile(true);
-        profile = { ...DEFAULT_DEMO_PROFILE, ...parsed };
+        if (parsed && (parsed.projectCostLakh || parsed.annualIncomeLakh)) {
+          profile = parsed;
+        }
       }
     } catch {}
-    if (userProfile?.name) {
-      profile = { ...DEFAULT_DEMO_PROFILE, ...userProfile } as UserProfile;
-      setHasProfile(true);
+    if (!profile && userProfile && (userProfile.projectCostLakh || userProfile.annualIncomeLakh)) {
+      profile = userProfile as UserProfile;
     }
-    setMatches(matchSchemes(profile));
+    if (profile && profile.projectCostLakh && profile.loanRequiredLakh && profile.annualIncomeLakh) {
+      setHasProfile(true);
+      setMatches(matchSchemes(profile));
+    } else {
+      setHasProfile(false);
+      setMatches([]);
+    }
   }, [userProfile]);
 
   const filtered = filter === "all" ? matches : filter === "eligible" ? matches.filter(m => m.isEligible) : matches.filter(m => !m.isEligible);

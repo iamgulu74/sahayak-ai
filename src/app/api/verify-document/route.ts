@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
 const OCR_SPACE_KEY = process.env.OCR_SPACE_API_KEY || process.env.NEXT_PUBLIC_OCR_SPACE_API_KEY || "K86224423788957";
 
-const CANDIDATE_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-flash-latest"];
+const CANDIDATE_MODELS = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-pro", "gemini-2.0-flash"];
 
 async function runOCRSpace(base64Image: string, mimeType: string): Promise<string> {
   try {
