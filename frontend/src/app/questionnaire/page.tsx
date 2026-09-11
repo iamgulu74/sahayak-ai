@@ -22,8 +22,11 @@ import {
   X,
   AlertTriangle,
   CheckCircle2,
-  FileText
+  FileText,
+  Camera,
+  Upload
 } from "lucide-react";
+import CameraCaptureModal from "@/components/CameraCaptureModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserProfile } from "@/lib/matching-engine";
 import { INDIAN_STATES } from "@/lib/partner-router";
@@ -67,6 +70,10 @@ export default function QuestionnairePage() {
   const [isResetting, setIsResetting] = useState(false);
   const [resetToast, setResetToast] = useState<string | null>(null);
 
+  // Profile Photo State
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+
   const [form, setForm] = useState<Partial<UserProfile>>({
     name: userProfile?.name || user?.displayName || "",
     age: userProfile?.age || undefined,
@@ -82,10 +89,7 @@ export default function QuestionnairePage() {
     projectCostLakh: userProfile?.projectCostLakh || undefined,
     loanRequiredLakh: userProfile?.loanRequiredLakh || undefined,
     purpose: userProfile?.purpose || "business_start",
-    aadhaarMasked: userProfile?.aadhaarMasked || "",
-    panMasked: userProfile?.panMasked || "",
-    aadhaarVerified: userProfile?.aadhaarVerified || false,
-    panVerified: userProfile?.panVerified || false,
+    photoUrl: userProfile?.photoUrl || (typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") || "" : ""),
     phone: userProfile?.phone || (user as any)?.phoneNumber || "",
     isStreetVendor: false,
     isWoman: false,
@@ -94,25 +98,32 @@ export default function QuestionnairePage() {
 
   // Sync profile when auth or stored data arrives
   useEffect(() => {
+    const storedPhoto = typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null;
     try {
       const stored = sessionStorage.getItem("sahayak_profile") || localStorage.getItem("sahayak_profile");
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed && (parsed.projectCostLakh || parsed.district || parsed.age)) {
+        if (storedPhoto && !parsed.photoUrl) parsed.photoUrl = storedPhoto;
+        if (parsed && (parsed.projectCostLakh || parsed.district || parsed.age || parsed.photoUrl)) {
           setForm((prev) => ({ ...prev, ...parsed }));
           return;
         }
       }
     } catch {}
 
-    if (userProfile?.projectCostLakh || userProfile?.district) {
+    if (userProfile?.projectCostLakh || userProfile?.district || userProfile?.photoUrl) {
       setForm((prev) => ({
         ...prev,
         ...userProfile,
+        photoUrl: userProfile.photoUrl || storedPhoto || prev.photoUrl,
         name: userProfile.name || prev.name,
       }));
     } else if (userProfile?.name && !form.name) {
-      setForm((prev) => ({ ...prev, name: userProfile.name }));
+      setForm((prev) => ({
+        ...prev,
+        name: userProfile.name,
+        photoUrl: userProfile.photoUrl || storedPhoto || prev.photoUrl,
+      }));
     }
   }, [userProfile]);
 
@@ -162,24 +173,38 @@ export default function QuestionnairePage() {
   const update = (key: string, value: any) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  // Aadhaar manual typing formatter (groups of 4)
-  const handleAadhaarChange = (raw: string) => {
-    const cleanedDigits = raw.replace(/\D/g, "").slice(0, 12);
-    if (cleanedDigits.length > 0 && !raw.includes("X")) {
-      const formatted = cleanedDigits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
-      update("aadhaarMasked", formatted);
-      update("aadhaarNumber", formatted);
-    } else {
-      update("aadhaarMasked", raw.slice(0, 16));
-      update("aadhaarNumber", raw.slice(0, 16));
+  // Profile Photo Upload / Camera Handlers
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Please upload an image under 2MB.");
+      return;
     }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      update("photoUrl", dataUrl);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("sahayak_profile_photo", dataUrl);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
-  // PAN manual typing formatter (auto uppercase, max 10 chars)
-  const handlePanChange = (raw: string) => {
-    const upper = raw.toUpperCase().slice(0, 10);
-    update("panMasked", upper);
-    update("panNumber", upper);
+  const handleCameraCapture = (file: File, dataUrl: string) => {
+    update("photoUrl", dataUrl);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("sahayak_profile_photo", dataUrl);
+    }
+    setIsCameraOpen(false);
+  };
+
+  const handleRemovePhoto = () => {
+    update("photoUrl", "");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("sahayak_profile_photo");
+    }
   };
 
   // Reset Profile Action
@@ -191,6 +216,7 @@ export default function QuestionnairePage() {
         sessionStorage.removeItem("sahayak_profile");
         localStorage.removeItem("sahayak_profile");
         localStorage.removeItem("sahayak_all_verified_docs");
+        localStorage.removeItem("sahayak_profile_photo");
       }
       setForm({
         name: user?.displayName || (userProfile as any)?.name || "",
@@ -207,10 +233,7 @@ export default function QuestionnairePage() {
         projectCostLakh: undefined,
         loanRequiredLakh: undefined,
         purpose: "business_start",
-        aadhaarMasked: "",
-        panMasked: "",
-        aadhaarVerified: false,
-        panVerified: false,
+        photoUrl: "",
         phone: (user as any)?.phoneNumber || (userProfile as any)?.phone || "",
         isStreetVendor: false,
         isWoman: false,
@@ -251,13 +274,7 @@ export default function QuestionnairePage() {
     router.push("/matching");
   };
 
-  // Format validity checks
-  const cleanAadhaar = (form.aadhaarMasked || "").replace(/\s+/g, "");
-  const isAadhaarValid =
-    /^\d{12}$/.test(cleanAadhaar) ||
-    /^XXXX-XXXX-\d{4}$/i.test(cleanAadhaar) ||
-    /^XXXX\sXXXX\s\d{4}$/i.test(cleanAadhaar);
-  const isPanValid = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.panMasked || "");
+
 
   return (
     <div className="page-container py-12 px-4 sm:px-6">
@@ -441,100 +458,83 @@ export default function QuestionnairePage() {
                 </div>
               </div>
 
-              {/* Official Identity Details (Aadhaar & PAN Number Entry Only) */}
+              {/* Applicant Profile Photo (for Biometric Face Match with Passport Photo) */}
               <div className="pt-4 border-t border-slate-100 space-y-3">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-indigo-600" />
-                    Official Identity Details (Aadhaar & PAN)
-                  </h3>
-                  <p className="text-[11px] text-slate-500">
-                    Enter your official identity document numbers for verification and scheme matching.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Aadhaar Number Field */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[11px] font-bold text-slate-700">
-                        Aadhaar Number / Reference
-                      </label>
-                      {isAadhaarValid ? (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] flex items-center gap-1">
-                          <Check className="w-2.5 h-2.5" /> Valid 12-Digit UID
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-slate-400">12 digits</span>
-                      )}
-                    </div>
-
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={form.aadhaarMasked || ""}
-                        onChange={(e) => handleAadhaarChange(e.target.value)}
-                        placeholder="Enter 12-digit UID (e.g. 5482 9102 3847)"
-                        maxLength={14}
-                        className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-white text-slate-800 font-mono focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                      />
-                      {form.aadhaarMasked && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            update("aadhaarMasked", "");
-                            update("aadhaarNumber", "");
-                          }}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-slate-400">
-                      Enter 12-digit UID as printed on your Aadhaar card
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                      Applicant Profile Photo (Biometric ID)
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      Add a clear frontal photograph of yourself. This is automatically matched with the passport-size photo submitted for scheme approval.
                     </p>
                   </div>
+                  {form.photoUrl && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] flex items-center gap-1 shrink-0">
+                      <Check className="w-2.5 h-2.5" /> Photo Attached
+                    </span>
+                  )}
+                </div>
 
-                  {/* PAN Card Field */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[11px] font-bold text-slate-700">
-                        PAN Card Number
-                      </label>
-                      {isPanValid ? (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] flex items-center gap-1">
-                          <Check className="w-2.5 h-2.5" /> Valid PAN
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-slate-400">10 characters</span>
-                      )}
-                    </div>
+                <input
+                  type="file"
+                  ref={photoInputRef}
+                  onChange={handlePhotoUpload}
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                />
 
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={form.panMasked || ""}
-                        onChange={(e) => handlePanChange(e.target.value)}
-                        placeholder="Enter 10-character PAN (e.g. ABCDE1234F)"
-                        maxLength={10}
-                        className="w-full text-xs rounded-xl border border-slate-300 p-2.5 bg-white text-slate-800 font-mono uppercase focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-slate-50 to-indigo-50/40 border border-indigo-100/80 flex flex-col sm:flex-row items-center gap-4">
+                  {form.photoUrl ? (
+                    <div className="relative group shrink-0">
+                      <img
+                        src={form.photoUrl}
+                        alt="Applicant Profile Photo"
+                        className="w-24 h-28 object-cover rounded-xl border-2 border-indigo-500 shadow-md"
                       />
-                      {form.panMasked && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            update("panMasked", "");
-                            update("panNumber", "");
-                          }}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={handleRemovePhoto}
+                        className="absolute -top-2 -right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 shadow cursor-pointer"
+                        title="Remove photo"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-28 rounded-xl border-2 border-dashed border-slate-300 bg-white flex flex-col items-center justify-center text-slate-400 shrink-0">
+                      <User className="w-8 h-8 text-slate-300 mb-1" />
+                      <span className="text-[10px] font-medium text-center px-1">No Photo</span>
+                    </div>
+                  )}
+
+                  <div className="flex-1 space-y-2 text-center sm:text-left">
+                    <p className="text-xs text-slate-700 font-medium">
+                      {form.photoUrl
+                        ? "Profile photo is ready! Our AI will use this to verify biometric face match against your passport-size photo."
+                        : "Upload a recent portrait photo or take a live photo using your camera."}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+                      <button
+                        type="button"
+                        onClick={() => photoInputRef.current?.click()}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        {form.photoUrl ? "Change Photo" : "Upload Photo"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsCameraOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                      >
+                        <Camera className="w-3.5 h-3.5 text-indigo-600" />
+                        Take Live Selfie
+                      </button>
                     </div>
                     <p className="text-[10px] text-slate-400">
-                      Enter 10-character alphanumeric PAN (e.g. ABCDE1234F)
+                      Accepted: JPG, PNG, WEBP (Max 2MB). Make sure your face is clearly visible.
                     </p>
                   </div>
                 </div>
@@ -778,6 +778,16 @@ export default function QuestionnairePage() {
           </div>
         </div>
       )}
+
+      {/* Camera Capture Modal for Profile Photo */}
+      <CameraCaptureModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={handleCameraCapture}
+        title="Applicant Profile Photo Capture"
+        subtitle="Take a clear frontal photo for your applicant profile and biometric matching."
+        expectedDocType="Applicant Photograph"
+      />
     </div>
   );
 }

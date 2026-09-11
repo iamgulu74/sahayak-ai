@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, TrendingUp, Bookmark, Calculator, MapPin, Bell, ChevronRight, CheckCircle, Clock, User, BarChart3, ArrowRight, RotateCcw, AlertTriangle, CheckCircle2, X } from "lucide-react";
+import { Sparkles, TrendingUp, Bookmark, Calculator, MapPin, Bell, ChevronRight, CheckCircle, Clock, User, BarChart3, ArrowRight, RotateCcw, AlertTriangle, CheckCircle2, X, Camera, Upload, ShieldCheck } from "lucide-react";
+import CameraCaptureModal from "@/components/CameraCaptureModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { matchSchemes, UserProfile, SchemeMatch, DEFAULT_DEMO_PROFILE, EMPTY_USER_PROFILE } from "@/lib/matching-engine";
 import { rankPartners } from "@/lib/partner-router";
@@ -21,7 +22,7 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
 }
 
 export default function DashboardPage() {
-  const { user, userProfile, resetProfile } = useAuth();
+  const { user, userProfile, resetProfile, updateProfile } = useAuth();
   const router = useRouter();
   const [matches, setMatches] = useState<SchemeMatch[]>([]);
   const [appStage, setAppStage] = useState(0);
@@ -30,6 +31,50 @@ export default function DashboardPage() {
   const [isResetting, setIsResetting] = useState(false);
   const [resetSuccessToast, setResetSuccessToast] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
+
+  // Profile Photo State
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [photoToast, setPhotoToast] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Please upload an image under 2MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("sahayak_profile_photo", dataUrl);
+      }
+      updateProfile({ photoUrl: dataUrl });
+      setPhotoToast("Profile photo updated successfully!");
+      setTimeout(() => setPhotoToast(null), 3000);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCameraCapture = (file: File, dataUrl: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("sahayak_profile_photo", dataUrl);
+    }
+    updateProfile({ photoUrl: dataUrl });
+    setIsCameraOpen(false);
+    setPhotoToast("Live profile photo captured successfully!");
+    setTimeout(() => setPhotoToast(null), 3000);
+  };
+
+  const handleRemovePhoto = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("sahayak_profile_photo");
+    }
+    updateProfile({ photoUrl: "" });
+    setPhotoToast("Profile photo removed.");
+    setTimeout(() => setPhotoToast(null), 3000);
+  };
 
   useEffect(() => {
     let profile: UserProfile | null = null;
@@ -92,11 +137,24 @@ export default function DashboardPage() {
     <div className="page-container py-16 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Greeting */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-surface-100 mb-2">
-            Welcome back, <span className="gradient-text">{displayName}</span> 👋
-          </h1>
-          <p className="text-surface-400">Here's your personalized overview and top scheme recommendations.</p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          {userProfile?.photoUrl ? (
+            <img
+              src={userProfile.photoUrl}
+              alt={displayName}
+              className="w-16 h-16 rounded-2xl object-cover border-2 border-primary-500 shadow-md shrink-0"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-primary-500/20 text-primary-400 border border-primary-500/30 flex items-center justify-center shrink-0">
+              <User className="w-8 h-8" />
+            </div>
+          )}
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-surface-100 mb-1">
+              Welcome back, <span className="gradient-text">{displayName}</span> 👋
+            </h1>
+            <p className="text-surface-400 text-sm">Here's your personalized overview and top scheme recommendations.</p>
+          </div>
         </motion.div>
 
         {/* Stats row */}
@@ -217,6 +275,86 @@ export default function DashboardPage() {
 
           {/* Sidebar */}
           <div className="space-y-5">
+            {/* Applicant Profile Photo Card */}
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }} className="glass-card p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-surface-200 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-indigo-400" />
+                  Applicant Biometric Photo
+                </h3>
+                {userProfile?.photoUrl ? (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
+                    <CheckCircle className="w-2.5 h-2.5" /> Biometrics Active
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold">
+                    Action Needed
+                  </span>
+                )}
+              </div>
+
+              <input
+                type="file"
+                ref={photoInputRef}
+                onChange={handlePhotoUpload}
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+              />
+
+              <div className="flex items-center gap-3.5 mb-3">
+                {userProfile?.photoUrl ? (
+                  <div className="relative group shrink-0">
+                    <img
+                      src={userProfile.photoUrl}
+                      alt={displayName}
+                      className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-500/60 shadow-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="absolute -top-1.5 -right-1.5 p-1 bg-rose-600 text-white rounded-full hover:bg-rose-700 shadow cursor-pointer"
+                      title="Remove profile photo"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl border-2 border-dashed border-slate-700 bg-surface-900/60 flex flex-col items-center justify-center text-surface-500 shrink-0">
+                    <User className="w-7 h-7 text-surface-400 mb-0.5" />
+                    <span className="text-[9px]">No Photo</span>
+                  </div>
+                )}
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-surface-200 font-semibold truncate">{displayName}</p>
+                  <p className="text-[11px] text-surface-400 leading-tight mt-0.5">
+                    {userProfile?.photoUrl
+                      ? "Biometric identity linked for instant passport-photo face matching."
+                      : "Add a photo to enable biometric facial matching against passport photos."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 text-xs font-semibold transition-all cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  {userProfile?.photoUrl ? "Change Photo" : "Upload Photo"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCameraOpen(true)}
+                  className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-surface-800 hover:bg-surface-700 text-surface-200 border border-surface-700 text-xs font-semibold transition-all cursor-pointer"
+                >
+                  <Camera className="w-3.5 h-3.5 text-indigo-400" />
+                  Live Selfie
+                </button>
+              </div>
+            </motion.div>
+
             {/* Recommended Partner */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="glass-card p-5">
               <h3 className="text-sm font-semibold text-surface-200 mb-4 flex items-center gap-2"><MapPin className="w-4 h-4 text-success-400" /> Recommended Partner</h3>
@@ -342,6 +480,23 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+      {/* Photo Toast */}
+      {photoToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-indigo-900/90 backdrop-blur-md border border-indigo-500/40 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-medium animate-in fade-in slide-in-from-bottom-3">
+          <CheckCircle2 className="w-4 h-4 text-indigo-400" />
+          <span>{photoToast}</span>
+        </div>
+      )}
+
+      {/* Camera Capture Modal for Profile Photo */}
+      <CameraCaptureModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={handleCameraCapture}
+        title="Applicant Profile Photo Capture"
+        subtitle="Take a clear frontal photo for your applicant profile and biometric matching."
+        expectedDocType="Applicant Photograph"
+      />
     </div>
   );
 }

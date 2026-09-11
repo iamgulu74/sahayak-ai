@@ -67,6 +67,12 @@ interface VerificationReport {
     dobStatus: string;
     explanation: string;
   };
+  faceMatch?: {
+    isFaceMatch: boolean;
+    faceMatchScore: number;
+    faceMatchStatus: string;
+    explanation: string;
+  };
   securityFeatures?: {
     emblemPresent: boolean;
     qrCodePresent: boolean;
@@ -357,6 +363,8 @@ export default function DocumentsPage() {
         setProcessingStage("Running Multimodal Forensic Tampering & Authenticity Analysis...");
       }, 1200);
 
+      const profilePhoto = userProfile?.photoUrl || (typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null);
+
       const res = await fetch("/api/verify-document", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -367,6 +375,7 @@ export default function DocumentsPage() {
             name: applicantName.trim() || undefined,
             category: userProfile?.category || "SC",
             state: userProfile?.state || "Odisha",
+            photoUrl: profilePhoto || undefined,
           },
           documentTypeExpected: targetDocType,
         }),
@@ -382,11 +391,13 @@ export default function DocumentsPage() {
       // Automatically tick off document in checklist ONLY if authentic AND profile matched without error:
       const hasNameMismatch = json.data.profileMatch?.nameStatus === "MISMATCH" || json.data.profileMatch?.isMatch === false;
       const hasDobMismatch = json.data.profileMatch?.dobStatus === "MISMATCH";
+      const hasFaceMismatch = json.data.faceMatch?.faceMatchStatus === "MISMATCH" || json.data.faceMatch?.isFaceMatch === false;
 
       const isClean =
         json.data.authenticityStatus === "AUTHENTIC" &&
         !hasNameMismatch &&
         !hasDobMismatch &&
+        !hasFaceMismatch &&
         !json.data.isTamperedOrForged &&
         json.data.tamperingRiskLevel !== "CRITICAL" &&
         json.data.tamperingRiskLevel !== "HIGH";
@@ -1031,6 +1042,24 @@ export default function DocumentsPage() {
                                 </span>
                               </div>
                             </div>
+                            {report.faceMatch && (
+                              <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                                <span className="text-slate-500 font-medium">Biometric Profile Face Match:</span>
+                                <span className={`font-bold px-1.5 py-0.5 rounded ${
+                                  report.faceMatch.faceMatchStatus === "MATCH"
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : report.faceMatch.faceMatchStatus === "MISMATCH"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-slate-200 text-slate-700"
+                                }`}>
+                                  {report.faceMatch.faceMatchStatus === "MATCH"
+                                    ? `✓ Match (${report.faceMatch.faceMatchScore}%)`
+                                    : report.faceMatch.faceMatchStatus === "MISMATCH"
+                                    ? "🚨 Face Mismatch"
+                                    : "No Profile Photo"}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
                           {/* Official Certificate Template Audit Card */}

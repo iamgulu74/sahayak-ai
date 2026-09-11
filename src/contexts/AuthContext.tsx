@@ -44,21 +44,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(u);
         try {
           const snap = await getDoc(doc(db, "users", u.uid));
+          const storedPhoto = typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null;
           if (snap.exists()) {
             const data = snap.data() as Partial<UserProfile>;
+            if (!data.photoUrl && storedPhoto) data.photoUrl = storedPhoto;
             setUserProfile(data);
             if (data.languagePreference) setLanguageState(data.languagePreference);
           } else {
             setUserProfile({
               name: u.displayName || u.email?.split("@")[0] || "User",
               languagePreference: "en",
+              photoUrl: u.photoURL || storedPhoto || undefined,
             });
           }
         } catch (error) {
           console.warn("Firestore access restricted by security rules. Using fallback profile:", error);
+          const storedPhoto = typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null;
           setUserProfile({
             name: u.displayName || u.email?.split("@")[0] || "User",
             languagePreference: "en",
+            photoUrl: u.photoURL || storedPhoto || undefined,
           });
         }
       } else {
@@ -67,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const stored = typeof window !== "undefined"
             ? (localStorage.getItem("sahayak_otp_session") || sessionStorage.getItem("sahayak_otp_session") || sessionStorage.getItem("sahayak_profile"))
             : null;
+          const storedPhoto = typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null;
           if (stored) {
             const parsed = JSON.parse(stored);
             if (parsed && (parsed.phone || parsed.verified)) {
@@ -75,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 displayName: parsed.name || "Beneficiary",
                 phoneNumber: parsed.phone,
                 email: parsed.email || null,
+                photoURL: parsed.photoUrl || storedPhoto || null,
                 isOtpUser: true,
               };
               setUser(otpUser);
@@ -83,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 phone: parsed.phone,
                 languagePreference: "en",
                 verified: true,
+                photoUrl: parsed.photoUrl || storedPhoto || undefined,
               });
               setLoading(false);
               return;
@@ -174,6 +182,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     const updated = { ...userProfile, ...data };
     setUserProfile(updated);
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("sahayak_profile", JSON.stringify(updated));
+        if (updated.photoUrl) {
+          localStorage.setItem("sahayak_profile_photo", updated.photoUrl);
+        }
+      } catch {}
+    }
     try {
       await setDoc(doc(db, "users", user.uid), updated, { merge: true });
     } catch (error) {
@@ -193,6 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("sahayak_profile");
       localStorage.removeItem("sahayak_profile");
+      localStorage.removeItem("sahayak_profile_photo");
     }
     if (user && !('isOtpUser' in user && user.isOtpUser)) {
       try {

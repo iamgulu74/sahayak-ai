@@ -175,7 +175,7 @@ export default function ApplySchemeModal({
   const handleProceedToVerification = (e: React.FormEvent) => {
     e.preventDefault();
     if (!applicantName.trim()) {
-      setAuthError("Please enter the applicant full name as per Aadhaar.");
+      setAuthError("Please enter the applicant full name.");
       return;
     }
     setAuthError("");
@@ -197,6 +197,8 @@ export default function ApplySchemeModal({
         reader.readAsDataURL(file);
       });
 
+      const profilePhoto = userProfile?.photoUrl || (typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null);
+
       const res = await fetch("/api/verify-document", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -207,6 +209,7 @@ export default function ApplySchemeModal({
             name: applicantName.trim() || undefined,
             category: category,
             state: state,
+            photoUrl: profilePhoto || undefined,
           },
           documentTypeExpected: docName,
         }),
@@ -220,9 +223,12 @@ export default function ApplySchemeModal({
       const report = json.data;
       const hasNameMismatch =
         report.profileMatch?.nameStatus === "MISMATCH" || report.profileMatch?.isMatch === false;
+      const hasFaceMismatch =
+        report.faceMatch?.faceMatchStatus === "MISMATCH" || report.faceMatch?.isFaceMatch === false;
       const isClean =
         report.authenticityStatus === "AUTHENTIC" &&
         !hasNameMismatch &&
+        !hasFaceMismatch &&
         !report.isTamperedOrForged &&
         report.tamperingRiskLevel !== "CRITICAL" &&
         report.tamperingRiskLevel !== "HIGH";
@@ -236,9 +242,11 @@ export default function ApplySchemeModal({
           } catch {}
           return next;
         });
-        setVerificationSuccess(`✓ ${docName} verified authentic (Forensic Score: ${report.authenticityScore || 95}/100)`);
+        const faceBadge = report.faceMatch?.faceMatchStatus === "MATCH" ? " & Biometric Face Match Confirmed" : "";
+        setVerificationSuccess(`✓ ${docName} verified authentic (Forensic Score: ${report.authenticityScore || 95}/100)${faceBadge}`);
       } else {
         const reason =
+          (hasFaceMismatch ? report.faceMatch?.explanation : null) ||
           report.forensicSummary ||
           report.profileMatch?.explanation ||
           (report.tamperSignals && report.tamperSignals[0]) ||
@@ -593,7 +601,7 @@ export default function ApplySchemeModal({
               <div className="space-y-3">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">
-                    Applicant Full Name (as on Aadhaar) *
+                    Applicant Full Name *
                   </label>
                   <div className="relative">
                     <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -777,7 +785,12 @@ export default function ApplySchemeModal({
               <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 flex items-start gap-2.5 text-[11px] leading-relaxed">
                 <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <strong>Mandatory Verification Rule:</strong> Schemes cannot be applied for without verifying documents. Please upload and verify your mandatory certificates below to unlock application submission.
+                  <strong>Mandatory Verification Rule:</strong> Schemes cannot be applied for without verifying documents.
+                  {userProfile?.photoUrl ? (
+                    <span className="text-indigo-700 font-medium"> Biometric face match against your profile photo is active for passport photographs.</span>
+                  ) : (
+                    <span> Upload your passport-size photo to match with your profile.</span>
+                  )}
                 </div>
               </div>
 

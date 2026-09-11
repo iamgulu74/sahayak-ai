@@ -1,5 +1,7 @@
 export interface SubmittedApplication {
   applicationId: string;
+  userId?: string;
+  applicantEmail?: string;
   schemeId: string;
   schemeName: string;
   schemeShortName: string;
@@ -15,6 +17,8 @@ export interface SubmittedApplication {
   currentStageId: number; // 1 to 7
   stageDates: Record<number, string>;
   notes: string;
+  verifiedDocuments?: string[];
+  documentVerificationStatus?: "VERIFIED" | "PENDING";
 }
 
 const STORAGE_KEY = "sahayak_submitted_applications";

@@ -146,6 +146,22 @@ export function consolidateResults(
         }
       }
     }
+
+    // Biometric face mismatch rejection
+    if (resultToReturn.faceMatch?.faceMatchStatus === "MISMATCH") {
+      resultToReturn.isGovernmentDocument = false;
+      resultToReturn.authenticityStatus = "SUSPICIOUS_TAMPERED";
+      resultToReturn.authenticityScore = 0;
+      resultToReturn.isTamperedOrForged = true;
+      resultToReturn.tamperingRiskLevel = "CRITICAL";
+      if (!resultToReturn.tamperSignals) resultToReturn.tamperSignals = [];
+      resultToReturn.tamperSignals.unshift(
+        "Biometric Face Mismatch: Uploaded passport-size photo does not match registered applicant profile photo."
+      );
+      resultToReturn.forensicSummary =
+        "DOCUMENT REJECTED: Biometric face comparison failed. The uploaded passport photo depicts a different person from the registered applicant profile photo.";
+    }
+
     resultToReturn.rawOCRPreview = ocrSpaceRawText.slice(0, 500);
   } else {
     const textUpper = ocrSpaceRawText.toUpperCase();

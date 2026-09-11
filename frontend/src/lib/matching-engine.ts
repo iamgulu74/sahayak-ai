@@ -27,6 +27,7 @@ export interface UserProfile {
   panVerified?: boolean;
   phone?: string;
   verified?: boolean;
+  photoUrl?: string;
 }
 
 export interface EligibilityCriterion {
