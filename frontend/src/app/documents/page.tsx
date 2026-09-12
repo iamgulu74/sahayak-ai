@@ -20,7 +20,8 @@ import {
   Camera,
   AlertOctagon,
   FileBadge,
-  UserCheck
+  UserCheck,
+  RotateCcw
 } from "lucide-react";
 import { SCHEMES, getSchemeById } from "@/lib/schemes-data";
 import { useAuth } from "@/contexts/AuthContext";
@@ -295,6 +296,27 @@ export default function DocumentsPage() {
     setPreviewUrl(null);
   };
 
+  const handleRevertDocument = (docName: string) => {
+    setCheckedDocs((prev) => {
+      const next = { ...prev };
+      delete next[docName];
+      try {
+        if (Object.keys(next).length > 0) {
+          localStorage.setItem(
+            `sahayak_verified_docs_${selectedSchemeId}`,
+            JSON.stringify(next)
+          );
+        } else {
+          localStorage.removeItem(`sahayak_verified_docs_${selectedSchemeId}`);
+        }
+      } catch {}
+      return next;
+    });
+    if (justVerifiedDoc === docName) {
+      setJustVerifiedDoc(null);
+    }
+  };
+
   const MAX_FILE_SIZE_BYTES = 1024 * 1024; // 1MB limit
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -422,6 +444,33 @@ export default function DocumentsPage() {
           });
           setJustVerifiedDoc(matchedReq);
         }
+      } else {
+        // REVERSAL ON FAILED RE-SCAN: If a document was previously verified but this re-scan was rejected/mismatched,
+        // reverse the verification and clear its tick!
+        const matchedReq = findMatchingChecklistDoc(
+          scheme.requiredDocuments,
+          targetDocType,
+          json.data.documentTypeDetected
+        ) || targetDocType;
+
+        setCheckedDocs((prev) => {
+          if (!prev[matchedReq] && !prev[targetDocType]) return prev;
+          const next = { ...prev };
+          delete next[matchedReq];
+          delete next[targetDocType];
+          try {
+            if (Object.keys(next).length > 0) {
+              localStorage.setItem(
+                `sahayak_verified_docs_${selectedSchemeId}`,
+                JSON.stringify(next)
+              );
+            } else {
+              localStorage.removeItem(`sahayak_verified_docs_${selectedSchemeId}`);
+            }
+          } catch {}
+          return next;
+        });
+        setJustVerifiedDoc(null);
       }
     } catch (err: any) {
       console.error(err);
@@ -534,9 +583,18 @@ export default function DocumentsPage() {
                       >
                         <div className="flex items-start gap-3 flex-1 min-w-0 pr-2">
                           {isChecked ? (
-                            <div className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRevertDocument(doc);
+                              }}
+                              className="w-5 h-5 rounded-full bg-emerald-100 hover:bg-rose-100 border border-emerald-300 hover:border-rose-300 text-emerald-600 hover:text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5 group/check transition-colors cursor-pointer"
+                              title="Click to revert / un-verify this document"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 group-hover/check:hidden" />
+                              <RotateCcw className="w-3 h-3 hidden group-hover/check:block" />
+                            </button>
                           ) : (
                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
                               isCurrentTarget ? "border-indigo-500 bg-indigo-50" : "border-slate-300 bg-slate-50"
@@ -571,31 +629,57 @@ export default function DocumentsPage() {
                           const isPhotoDoc = /photo|photograph|passport/i.test(doc);
                           return isChecked ? (
                             <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                              {isPhotoDoc && (
+                              {isPhotoDoc ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setTargetDocType(doc);
+                                      setIsCameraOpen(true);
+                                    }}
+                                    className="flex-shrink-0 text-[10px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-lg border border-indigo-200 transition-colors cursor-pointer flex items-center gap-1"
+                                    title="Re-scan passport photo with front camera"
+                                  >
+                                    <Camera className="w-3 h-3" /> Re-scan (Camera)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setTargetDocType(doc);
+                                      fileInputRef.current?.click();
+                                    }}
+                                    className="flex-shrink-0 text-[10px] font-semibold text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer flex items-center gap-1"
+                                    title="Re-scan by uploading new photo file"
+                                  >
+                                    <Upload className="w-3 h-3" /> Re-scan (Upload)
+                                  </button>
+                                </>
+                              ) : (
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setTargetDocType(doc);
-                                    setIsCameraOpen(true);
+                                    fileInputRef.current?.click();
                                   }}
-                                  className="flex-shrink-0 text-[10px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-lg border border-indigo-200 transition-colors cursor-pointer flex items-center gap-1"
-                                  title={`Capture photo via front camera`}
+                                  className="flex-shrink-0 text-[10px] font-semibold text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer flex items-center gap-1"
+                                  title={`Re-upload and verify ${doc}`}
                                 >
-                                  <Camera className="w-3 h-3" /> Camera
+                                  <RefreshCw className="w-3 h-3" /> Re-scan & Verify
                                 </button>
                               )}
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setTargetDocType(doc);
-                                  fileInputRef.current?.click();
+                                  handleRevertDocument(doc);
                                 }}
-                                className="flex-shrink-0 text-[10px] font-semibold text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer"
-                                title={`Re-upload and verify ${doc}`}
+                                className="flex-shrink-0 text-[10px] font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-2 py-1 rounded-lg border border-rose-200 transition-colors cursor-pointer flex items-center gap-1"
+                                title="Revert / un-verify this document"
                               >
-                                Re-scan
+                                <RotateCcw className="w-2.5 h-2.5" /> Revert
                               </button>
                             </div>
                           ) : (
@@ -744,6 +828,31 @@ export default function DocumentsPage() {
                     />
                   </div>
                 </div>
+
+                {/* Currently Verified Document Banner with Revert & Re-scan guidance */}
+                {checkedDocs[targetDocType] && (
+                  <div className="p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-300/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2.5 text-emerald-950">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                      <div>
+                        <div className="font-bold">
+                          &ldquo;{targetDocType}&rdquo; is verified authentic.
+                        </div>
+                        <span className="text-[11px] text-emerald-700 font-medium">
+                          You can re-scan below to test/replace this photo, or revert back to unverified.
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRevertDocument(targetDocType)}
+                      className="flex-shrink-0 px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                      title="Undo / revert verification for this document"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-rose-600" /> Revert Verification
+                    </button>
+                  </div>
+                )}
 
                 {/* Verification Mode Choice: Upload or Live Front Camera */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

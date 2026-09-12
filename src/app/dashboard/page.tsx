@@ -132,15 +132,16 @@ export default function DashboardPage() {
 
   const topMatches = matches.filter(m => m.isEligible).slice(0, 3);
   const displayName = userProfile?.name || user?.displayName || "Entrepreneur";
+  const effectivePhotoUrl = userProfile?.photoUrl || (typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null);
 
   return (
     <div className="page-container py-16 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Greeting */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          {userProfile?.photoUrl ? (
+          {effectivePhotoUrl ? (
             <img
-              src={userProfile.photoUrl}
+              src={effectivePhotoUrl}
               alt={displayName}
               className="w-16 h-16 rounded-2xl object-cover border-2 border-primary-500 shadow-md shrink-0"
             />
@@ -302,10 +303,10 @@ export default function DashboardPage() {
               />
 
               <div className="flex items-center gap-3.5 mb-3">
-                {userProfile?.photoUrl ? (
+                {effectivePhotoUrl ? (
                   <div className="relative group shrink-0">
                     <img
-                      src={userProfile.photoUrl}
+                      src={effectivePhotoUrl}
                       alt={displayName}
                       className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-500/60 shadow-md"
                     />
@@ -328,7 +329,7 @@ export default function DashboardPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-surface-200 font-semibold truncate">{displayName}</p>
                   <p className="text-[11px] text-surface-400 leading-tight mt-0.5">
-                    {userProfile?.photoUrl
+                    {effectivePhotoUrl
                       ? "Biometric identity linked for instant passport-photo face matching."
                       : "Add a photo to enable biometric facial matching against passport photos."}
                   </p>
@@ -342,7 +343,7 @@ export default function DashboardPage() {
                   className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 text-xs font-semibold transition-all cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  {userProfile?.photoUrl ? "Change Photo" : "Upload Photo"}
+                  {effectivePhotoUrl ? "Change Photo" : "Upload Photo"}
                 </button>
                 <button
                   type="button"

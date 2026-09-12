@@ -34,67 +34,93 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | AuthUser | null>(null);
-  const [userProfile, setUserProfile] = useState<Partial<UserProfile> | null>(null);
+  const [userProfile, setUserProfile] = useState<Partial<UserProfile> | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("sahayak_profile") || sessionStorage.getItem("sahayak_profile");
+        const storedPhoto = localStorage.getItem("sahayak_profile_photo");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (storedPhoto && !parsed.photoUrl) parsed.photoUrl = storedPhoto;
+          return parsed;
+        } else if (storedPhoto) {
+          return { photoUrl: storedPhoto, languagePreference: "en" };
+        }
+      } catch {}
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
   const [language, setLanguageState] = useState<"en" | "hi" | "or">("en");
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
+      const storedPhoto = typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null;
       if (u) {
         setUser(u);
         try {
           const snap = await getDoc(doc(db, "users", u.uid));
-          const storedPhoto = typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null;
           if (snap.exists()) {
             const data = snap.data() as Partial<UserProfile>;
-            if (!data.photoUrl && storedPhoto) data.photoUrl = storedPhoto;
-            setUserProfile(data);
+            const photo = data.photoUrl || storedPhoto || u.photoURL || undefined;
+            if (photo) data.photoUrl = photo;
+            setUserProfile((prev) => ({ ...prev, ...data }));
+            if (typeof window !== "undefined" && photo) {
+              localStorage.setItem("sahayak_profile_photo", photo);
+            }
             if (data.languagePreference) setLanguageState(data.languagePreference);
           } else {
-            setUserProfile({
-              name: u.displayName || u.email?.split("@")[0] || "User",
-              languagePreference: "en",
-              photoUrl: u.photoURL || storedPhoto || undefined,
-            });
+            const photo = u.photoURL || storedPhoto || undefined;
+            setUserProfile((prev) => ({
+              ...prev,
+              name: u.displayName || u.email?.split("@")[0] || prev?.name || "User",
+              languagePreference: prev?.languagePreference || "en",
+              photoUrl: photo,
+            }));
+            if (typeof window !== "undefined" && photo) {
+              localStorage.setItem("sahayak_profile_photo", photo);
+            }
           }
         } catch (error) {
           console.warn("Firestore access restricted by security rules. Using fallback profile:", error);
-          const storedPhoto = typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null;
-          setUserProfile({
-            name: u.displayName || u.email?.split("@")[0] || "User",
-            languagePreference: "en",
-            photoUrl: u.photoURL || storedPhoto || undefined,
-          });
+          const photo = u.photoURL || storedPhoto || undefined;
+          setUserProfile((prev) => ({
+            ...prev,
+            name: u.displayName || u.email?.split("@")[0] || prev?.name || "User",
+            languagePreference: prev?.languagePreference || "en",
+            photoUrl: photo,
+          }));
+          if (typeof window !== "undefined" && photo) {
+            localStorage.setItem("sahayak_profile_photo", photo);
+          }
         }
       } else {
-        // If not logged in via Firebase, check for active verified session
+        // If not logged in via Firebase, check for active verified session or stored profile
         try {
           const stored = typeof window !== "undefined"
-            ? (localStorage.getItem("sahayak_otp_session") || sessionStorage.getItem("sahayak_otp_session") || sessionStorage.getItem("sahayak_profile"))
+            ? (localStorage.getItem("sahayak_otp_session") || sessionStorage.getItem("sahayak_otp_session") || localStorage.getItem("sahayak_profile") || sessionStorage.getItem("sahayak_profile"))
             : null;
-          const storedPhoto = typeof window !== "undefined" ? localStorage.getItem("sahayak_profile_photo") : null;
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed && (parsed.phone || parsed.verified)) {
-              const otpUser: AuthUser = {
-                uid: `otp-${(parsed.phone || "user").replace(/\D/g, "")}`,
-                displayName: parsed.name || "Beneficiary",
-                phoneNumber: parsed.phone,
-                email: parsed.email || null,
-                photoURL: parsed.photoUrl || storedPhoto || null,
-                isOtpUser: true,
-              };
-              setUser(otpUser);
-              setUserProfile({
-                name: parsed.name || "Beneficiary",
-                phone: parsed.phone,
-                languagePreference: "en",
-                verified: true,
-                photoUrl: parsed.photoUrl || storedPhoto || undefined,
-              });
-              setLoading(false);
-              return;
-            }
+          if (stored || storedPhoto) {
+            const parsed = stored ? JSON.parse(stored) : {};
+            const photo = parsed.photoUrl || storedPhoto || undefined;
+            const otpUser: AuthUser = {
+              uid: `guest-${(parsed.phone || parsed.name || "user").toString().replace(/\D/g, "") || "session"}`,
+              displayName: parsed.name || "Beneficiary",
+              phoneNumber: parsed.phone,
+              email: parsed.email || null,
+              photoURL: photo || null,
+              isOtpUser: !!(parsed.phone || parsed.verified),
+            };
+            setUser(otpUser);
+            setUserProfile((prev) => ({
+              ...prev,
+              ...parsed,
+              name: parsed.name || prev?.name || "Beneficiary",
+              photoUrl: photo,
+            }));
+            if (parsed.languagePreference) setLanguageState(parsed.languagePreference);
+            setLoading(false);
+            return;
           }
         } catch {}
         setUser(null);
@@ -179,21 +205,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateProfile = async (data: Partial<UserProfile>) => {
-    if (!user) return;
     const updated = { ...userProfile, ...data };
     setUserProfile(updated);
     if (typeof window !== "undefined") {
       try {
         sessionStorage.setItem("sahayak_profile", JSON.stringify(updated));
+        localStorage.setItem("sahayak_profile", JSON.stringify(updated));
         if (updated.photoUrl) {
           localStorage.setItem("sahayak_profile_photo", updated.photoUrl);
+        } else if (data.photoUrl === "" || data.photoUrl === null) {
+          localStorage.removeItem("sahayak_profile_photo");
         }
       } catch {}
     }
-    try {
-      await setDoc(doc(db, "users", user.uid), updated, { merge: true });
-    } catch (error) {
-      console.warn("Could not save updated profile to Firestore (check Firestore rules):", error);
+    if (user && !('isOtpUser' in user && user.isOtpUser)) {
+      try {
+        await setDoc(doc(db, "users", user.uid), updated, { merge: true });
+      } catch (error) {
+        console.warn("Could not save updated profile to Firestore (check Firestore rules):", error);
+      }
     }
   };
 
